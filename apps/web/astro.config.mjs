@@ -6,7 +6,8 @@ const site = process.env.SITE_URL ?? "https://www.twilightlog.com";
 
 export default defineConfig({
   site,
-  integrations: [react(), sitemap()],
+  // Search is deliberately noindex, so it must not be advertised in the sitemap.
+  integrations: [react(), sitemap({ filter: (page) => !page.includes("/search") })],
   server: {
     host: "127.0.0.1",
     port: 4321,

@@ -380,6 +380,29 @@ func NormalizePayload(code string, raw map[string]any) (map[string]any, []string
 	return result, tags, nil
 }
 
+// IsUUID reports whether value is a canonical 8-4-4-4-12 hex identifier.
+// It guards path and body identifiers before they reach the database so a
+// malformed value behaves like a missing record instead of a 500.
+func IsUUID(value string) bool {
+	if len(value) != 36 {
+		return false
+	}
+	for i, char := range value {
+		switch i {
+		case 8, 13, 18, 23:
+			if char != '-' {
+				return false
+			}
+		default:
+			isHex := (char >= '0' && char <= '9') || (char >= 'a' && char <= 'f') || (char >= 'A' && char <= 'F')
+			if !isHex {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // TitleOf returns the display title for a canonical payload.
 func TitleOf(code string, payload map[string]any) string {
 	info, ok := typeInfos[code]

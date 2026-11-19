@@ -186,6 +186,22 @@ select {
   border-color: var(--ink);
 }
 
+/* 键盘用户必须能看到焦点位置，不能只依赖细边框变化。 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible,
+.search input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .checkbox {
   display: flex;
   align-items: center;

@@ -14,7 +14,7 @@ require (
 	github.com/pressly/goose/v3 v3.30.1
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	golang.org/x/crypto v0.59.0
-	golang.org/x/image v0.24.0
+	golang.org/x/image v0.39.0
 )
 
 require (

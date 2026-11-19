@@ -132,10 +132,25 @@ func workspaceCreateHandler(svc *workspace.Service) http.HandlerFunc {
 	}
 }
 
+// uuidParam rejects malformed identifiers before they reach the database so a
+// bad value looks like a missing record instead of an internal error.
+func uuidParam(w http.ResponseWriter, r *http.Request, message string) (string, bool) {
+	value := strings.TrimSpace(chi.URLParam(r, "id"))
+	if !workspace.IsUUID(value) {
+		httpx.WriteError(w, r, http.StatusNotFound, "not_found", message, nil)
+		return "", false
+	}
+	return value, true
+}
+
 func workspaceDetailHandler(svc *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		id, ok := uuidParam(w, r, "内容不存在")
+		if !ok {
+			return
+		}
 		actor, _ := auth.UserFromContext(r.Context())
-		detail, err := svc.Detail(r.Context(), actor, chi.URLParam(r, "type"), chi.URLParam(r, "id"))
+		detail, err := svc.Detail(r.Context(), actor, chi.URLParam(r, "type"), id)
 		if err != nil {
 			writeWorkspaceError(w, r, err)
 			return
@@ -153,8 +168,12 @@ func workspaceSaveHandler(svc *workspace.Service) http.HandlerFunc {
 		if !decodeJSON(w, r, &payload) {
 			return
 		}
+		id, ok := uuidParam(w, r, "内容不存在")
+		if !ok {
+			return
+		}
 		actor, _ := auth.UserFromContext(r.Context())
-		detail, err := svc.Save(r.Context(), actor, chi.URLParam(r, "type"), chi.URLParam(r, "id"),
+		detail, err := svc.Save(r.Context(), actor, chi.URLParam(r, "type"), id,
 			workspace.SaveInput{Slug: payload.Slug, Payload: payload.Payload}, clientIP(r), r.UserAgent())
 		if err != nil {
 			writeWorkspaceError(w, r, err)
@@ -166,8 +185,12 @@ func workspaceSaveHandler(svc *workspace.Service) http.HandlerFunc {
 
 func workspaceSubmitHandler(svc *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		id, ok := uuidParam(w, r, "内容不存在")
+		if !ok {
+			return
+		}
 		actor, _ := auth.UserFromContext(r.Context())
-		detail, err := svc.Submit(r.Context(), actor, chi.URLParam(r, "type"), chi.URLParam(r, "id"),
+		detail, err := svc.Submit(r.Context(), actor, chi.URLParam(r, "type"), id,
 			clientIP(r), r.UserAgent())
 		if err != nil {
 			writeWorkspaceError(w, r, err)
@@ -179,8 +202,12 @@ func workspaceSubmitHandler(svc *workspace.Service) http.HandlerFunc {
 
 func workspaceWithdrawHandler(svc *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		id, ok := uuidParam(w, r, "内容不存在")
+		if !ok {
+			return
+		}
 		actor, _ := auth.UserFromContext(r.Context())
-		detail, err := svc.Withdraw(r.Context(), actor, chi.URLParam(r, "type"), chi.URLParam(r, "id"),
+		detail, err := svc.Withdraw(r.Context(), actor, chi.URLParam(r, "type"), id,
 			clientIP(r), r.UserAgent())
 		if err != nil {
 			writeWorkspaceError(w, r, err)
@@ -192,8 +219,12 @@ func workspaceWithdrawHandler(svc *workspace.Service) http.HandlerFunc {
 
 func workspaceTrashHandler(svc *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		id, ok := uuidParam(w, r, "内容不存在")
+		if !ok {
+			return
+		}
 		actor, _ := auth.UserFromContext(r.Context())
-		if err := svc.Trash(r.Context(), actor, chi.URLParam(r, "type"), chi.URLParam(r, "id"),
+		if err := svc.Trash(r.Context(), actor, chi.URLParam(r, "type"), id,
 			clientIP(r), r.UserAgent()); err != nil {
 			writeWorkspaceError(w, r, err)
 			return
@@ -204,8 +235,12 @@ func workspaceTrashHandler(svc *workspace.Service) http.HandlerFunc {
 
 func workspaceRestoreHandler(svc *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		id, ok := uuidParam(w, r, "内容不存在")
+		if !ok {
+			return
+		}
 		actor, _ := auth.UserFromContext(r.Context())
-		if err := svc.Restore(r.Context(), actor, chi.URLParam(r, "type"), chi.URLParam(r, "id"),
+		if err := svc.Restore(r.Context(), actor, chi.URLParam(r, "type"), id,
 			clientIP(r), r.UserAgent()); err != nil {
 			writeWorkspaceError(w, r, err)
 			return
@@ -227,7 +262,11 @@ func reviewListHandler(svc *workspace.Service) http.HandlerFunc {
 
 func reviewDetailHandler(svc *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		detail, err := svc.ReviewDetail(r.Context(), chi.URLParam(r, "id"))
+		id, ok := uuidParam(w, r, "待审版本不存在")
+		if !ok {
+			return
+		}
+		detail, err := svc.ReviewDetail(r.Context(), id)
 		if err != nil {
 			writeWorkspaceError(w, r, err)
 			return
@@ -245,7 +284,10 @@ func approveHandler(svc *workspace.Service) http.HandlerFunc {
 		if !decodeJSON(w, r, &payload) {
 			return
 		}
-		versionID := chi.URLParam(r, "id")
+		versionID, ok := uuidParam(w, r, "待审版本不存在")
+		if !ok {
+			return
+		}
 		// Mobile clients may only approve a first publication; replacing an
 		// existing public version is a desktop-only risk.
 		if mobileRequest(r) {
@@ -278,8 +320,12 @@ func rejectHandler(svc *workspace.Service) http.HandlerFunc {
 		if !decodeJSON(w, r, &payload) {
 			return
 		}
+		id, ok := uuidParam(w, r, "待审版本不存在")
+		if !ok {
+			return
+		}
 		actor, _ := auth.UserFromContext(r.Context())
-		if _, err := svc.Reject(r.Context(), actor, chi.URLParam(r, "id"), payload.Comment,
+		if _, err := svc.Reject(r.Context(), actor, id, payload.Comment,
 			clientIP(r), r.UserAgent()); err != nil {
 			writeWorkspaceError(w, r, err)
 			return
@@ -408,8 +454,12 @@ func purgeContentHandler(svc *workspace.Service) http.HandlerFunc {
 		if !requireDesktop(w, r) {
 			return
 		}
+		id, ok := uuidParam(w, r, "内容不存在")
+		if !ok {
+			return
+		}
 		actor, _ := auth.UserFromContext(r.Context())
-		purged, err := svc.PermanentDelete(r.Context(), actor, chi.URLParam(r, "type"), chi.URLParam(r, "id"),
+		purged, err := svc.PermanentDelete(r.Context(), actor, chi.URLParam(r, "type"), id,
 			clientIP(r), r.UserAgent())
 		if err != nil {
 			writeWorkspaceError(w, r, err)
@@ -435,9 +485,8 @@ func notificationsHandler(svc *workspace.Service) http.HandlerFunc {
 func markNotificationHandler(svc *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		actor, _ := auth.UserFromContext(r.Context())
-		id := chi.URLParam(r, "id")
-		if strings.TrimSpace(id) == "" {
-			httpx.WriteError(w, r, http.StatusBadRequest, "validation_error", "通知 ID 不合法", nil)
+		id, ok := uuidParam(w, r, "通知不存在")
+		if !ok {
 			return
 		}
 		if err := svc.MarkRead(r.Context(), actor.ID, id); err != nil {
