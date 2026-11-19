@@ -14,6 +14,11 @@ tags:
   - name: audit
   - name: media
   - name: content
+  - name: workspace
+  - name: review
+  - name: recommendation
+  - name: notification
+  - name: tag
 paths:
   /healthz:
     get:
@@ -1003,6 +1008,612 @@ paths:
                 $ref: "#/components/schemas/TagList"
         "304":
           description: 内容未修改
+  /api/v1/workspace/summary:
+    get:
+      tags: [workspace]
+      summary: 编辑工作区统计
+      operationId: getWorkspaceSummary
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 五类内容的状态统计
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceSummary"
+        "401":
+          description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/workspace/content:
+    get:
+      tags: [workspace]
+      summary: 我的内容列表
+      operationId: listWorkspaceContent
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/ContentType"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [all, draft, pending, rejected, published, offline, trashed]
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - name: all
+          in: query
+          description: 管理员传 1 查看全站内容
+          schema:
+            type: string
+            enum: ["0", "1"]
+      responses:
+        "200":
+          description: 工作区内容分页
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceItemPage"
+    post:
+      tags: [workspace]
+      summary: 新建内容并生成草稿版本
+      operationId: createWorkspaceContent
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceSaveRequest"
+      responses:
+        "201":
+          description: 已创建
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceDetail"
+        "400":
+          description: 参数不合法
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/workspace/content/{type}/{id}:
+    get:
+      tags: [workspace]
+      summary: 读取工作版本与公开版本
+      operationId: getWorkspaceContent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/ContentId"
+      responses:
+        "200":
+          description: 内容详情
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceDetail"
+        "403":
+          description: 无权访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags: [workspace]
+      summary: 保存草稿
+      operationId: saveWorkspaceContent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/ContentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceSaveRequest"
+      responses:
+        "200":
+          description: 已保存
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceDetail"
+        "409":
+          description: 有待审版本，需先撤回
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/workspace/content/{type}/{id}/submit:
+    post:
+      tags: [workspace]
+      summary: 提交审核
+      operationId: submitWorkspaceContent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/ContentId"
+      responses:
+        "200":
+          description: 已进入审批队列
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceDetail"
+  /api/v1/workspace/content/{type}/{id}/withdraw:
+    post:
+      tags: [workspace]
+      summary: 撤回待审版本
+      operationId: withdrawWorkspaceContent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/ContentId"
+      responses:
+        "200":
+          description: 已撤回为草稿
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceDetail"
+  /api/v1/workspace/content/{type}/{id}/trash:
+    post:
+      tags: [workspace]
+      summary: 移入回收站
+      operationId: trashWorkspaceContent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/ContentId"
+      responses:
+        "200":
+          description: 已移入回收站
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "409":
+          description: 存在下级内容
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/workspace/content/{type}/{id}/restore:
+    post:
+      tags: [workspace]
+      summary: 从回收站恢复
+      operationId: restoreWorkspaceContent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/ContentId"
+      responses:
+        "200":
+          description: 已恢复
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "409":
+          description: 上级不可用
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/workspace/recycle:
+    get:
+      tags: [workspace]
+      summary: 回收站列表
+      operationId: listWorkspaceRecycle
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/ContentType"
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - name: all
+          in: query
+          description: 管理员传 1 查看全站回收站
+          schema:
+            type: string
+            enum: ["0", "1"]
+      responses:
+        "200":
+          description: 回收站分页
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceItemPage"
+  /api/v1/notifications:
+    get:
+      tags: [notification]
+      summary: 站内通知列表
+      operationId: listNotifications
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: 通知分页与未读数
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPage"
+  /api/v1/notifications/{id}/read:
+    post:
+      tags: [notification]
+      summary: 标记单条通知已读
+      operationId: readNotification
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 已读
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /api/v1/notifications/read-all:
+    post:
+      tags: [notification]
+      summary: 全部标记已读
+      operationId: readAllNotifications
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 已全部已读
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /api/v1/admin/reviews:
+    get:
+      tags: [review]
+      summary: 待审列表
+      operationId: listReviews
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            $ref: "#/components/schemas/ContentType"
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: 待审内容
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewList"
+  /api/v1/admin/reviews/{id}:
+    get:
+      tags: [review]
+      summary: 审批详情与公开版对照
+      operationId: getReview
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 版本 ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 审批详情
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewDetail"
+  /api/v1/admin/reviews/{id}/approve:
+    post:
+      tags: [review]
+      summary: 通过并替换公开版本
+      operationId: approveReview
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewDecision"
+      responses:
+        "200":
+          description: 已通过
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  removedTags:
+                    type: array
+                    items:
+                      type: string
+        "403":
+          description: 手机端不能替换公开版本
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/reviews/{id}/reject:
+    post:
+      tags: [review]
+      summary: 驳回待审版本
+      operationId: rejectReview
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewDecision"
+      responses:
+        "200":
+          description: 已驳回
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          description: 驳回理由必填
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/recommendations:
+    get:
+      tags: [recommendation]
+      summary: 读取首页推荐配置
+      operationId: getRecommendationSettings
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 推荐配置
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecommendationSettings"
+    put:
+      tags: [recommendation]
+      summary: 保存首页推荐配置
+      operationId: saveRecommendationSettings
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecommendationSettings"
+      responses:
+        "200":
+          description: 已保存
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          description: 数量超限或目标不可见
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/recommendations/candidates:
+    get:
+      tags: [recommendation]
+      summary: 可选推荐内容
+      operationId: listRecommendationCandidates
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [article, album]
+      responses:
+        "200":
+          description: 公开可见的候选内容
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CandidateList"
+  /api/v1/admin/tags:
+    get:
+      tags: [tag]
+      summary: 标签词库
+      operationId: listAdminTags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: scope
+          in: query
+          schema:
+            type: string
+            enum: [article, photo]
+      responses:
+        "200":
+          description: 标签与使用数量
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagUsageList"
+  /api/v1/admin/tags/{id}:
+    patch:
+      tags: [tag]
+      summary: 重命名或停用标签
+      operationId: updateTag
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                active:
+                  type: boolean
+      responses:
+        "200":
+          description: 已更新
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "403":
+          description: 仅桌面端
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/tags/{id}/merge:
+    post:
+      tags: [tag]
+      summary: 合并同作用域标签
+      operationId: mergeTag
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 被合并的标签 ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetId]
+              properties:
+                targetId:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: 已合并
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          description: 跨作用域或目标相同
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/system:
+    get:
+      tags: [system]
+      summary: 系统信息（只读）
+      operationId: getSystemInfo
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 部署版本、存储用量与只读策略
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemInfo"
+  /api/v1/admin/content/{type}/{id}:
+    delete:
+      tags: [review]
+      summary: 永久删除回收站内容
+      operationId: purgeContent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/ContentId"
+      responses:
+        "200":
+          description: 已删除并清理在线文件
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, mediaPurged]
+                properties:
+                  status:
+                    type: string
+                  mediaPurged:
+                    type: integer
+        "403":
+          description: 仅桌面端管理员
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
   securitySchemes:
     bearerAuth:
@@ -1081,6 +1692,21 @@ components:
         type: string
         enum: [latest, oldest]
         default: latest
+    ContentType:
+      name: type
+      in: path
+      required: true
+      description: 内容类型
+      schema:
+        $ref: "#/components/schemas/ContentType"
+    ContentId:
+      name: id
+      in: path
+      required: true
+      description: 内容 ID
+      schema:
+        type: string
+        format: uuid
   schemas:
     Health:
       type: object
@@ -1707,12 +2333,21 @@ components:
           $ref: "#/components/schemas/Album"
     HomeRecommendations:
       type: object
-      required: [items]
+      required: [items, n1, n2, autoFill]
       properties:
         items:
           type: array
           items:
             $ref: "#/components/schemas/Recommendation"
+        n1:
+          type: integer
+          description: 首页推荐文章目标数量
+        n2:
+          type: integer
+          description: 首页推荐相册目标数量
+        autoFill:
+          type: boolean
+          description: 未手工配置时是否用最新公开内容补位
     ArticleColumnPage:
       type: object
       required: [items, page, pageSize, total, totalPages]
@@ -1845,3 +2480,364 @@ components:
           type: integer
         totalPages:
           type: integer
+
+    ContentType:
+      type: string
+      enum: [article_column, article, photo_column, album, photo]
+    WorkspaceStatus:
+      type: string
+      enum: [draft, pending, rejected, published, offline, trashed]
+    WorkspaceItem:
+      type: object
+      required: [id, type, slug, title, status, workingStatus, hasPublished, parentId, ownerId, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: "#/components/schemas/ContentType"
+        slug:
+          type: string
+        title:
+          type: string
+        status:
+          $ref: "#/components/schemas/WorkspaceStatus"
+        workingStatus:
+          type: string
+        versionId:
+          type: string
+          format: uuid
+        versionNo:
+          type: integer
+        hasPublished:
+          type: boolean
+        parentId:
+          type: string
+        parentTitle:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+        ownerName:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        trashedAt:
+          type: string
+          format: date-time
+          nullable: true
+        mediaCount:
+          type: integer
+          description: 该内容版本引用到的原图/衍生图资源数量
+    WorkspaceItemPage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkspaceItem"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+    WorkspaceStats:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/ContentType"
+        total:
+          type: integer
+        draft:
+          type: integer
+        pending:
+          type: integer
+        rejected:
+          type: integer
+        published:
+          type: integer
+        offline:
+          type: integer
+        trashed:
+          type: integer
+    WorkspaceSummary:
+      type: object
+      required: [stats, pendingTotal]
+      properties:
+        stats:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkspaceStats"
+        pendingTotal:
+          type: integer
+    ContentVersion:
+      type: object
+      required: [id, status, versionNo, payload]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [draft, pending, rejected, approved]
+        versionNo:
+          type: integer
+        payload:
+          type: object
+          additionalProperties: true
+        comment:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+    WorkspaceDetail:
+      allOf:
+        - $ref: "#/components/schemas/WorkspaceItem"
+        - type: object
+          properties:
+            working:
+              $ref: "#/components/schemas/ContentVersion"
+            published:
+              $ref: "#/components/schemas/ContentVersion"
+    WorkspaceSaveRequest:
+      type: object
+      required: [payload]
+      properties:
+        type:
+          $ref: "#/components/schemas/ContentType"
+        slug:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+        payload:
+          type: object
+          additionalProperties: true
+    ReviewItem:
+      type: object
+      required: [versionId, type, entityId, title, versionNo, status, authorId, hasPublished]
+      properties:
+        versionId:
+          type: string
+          format: uuid
+        type:
+          $ref: "#/components/schemas/ContentType"
+        entityId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        versionNo:
+          type: integer
+        status:
+          type: string
+        authorId:
+          type: string
+          format: uuid
+        authorName:
+          type: string
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+        hasPublished:
+          type: boolean
+        payload:
+          type: object
+          additionalProperties: true
+    ReviewDetail:
+      allOf:
+        - $ref: "#/components/schemas/ReviewItem"
+        - type: object
+          properties:
+            published:
+              type: object
+              additionalProperties: true
+            tags:
+              type: array
+              items:
+                type: string
+            publishedAt:
+              type: string
+              format: date-time
+              nullable: true
+    ReviewList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewItem"
+    ReviewDecision:
+      type: object
+      properties:
+        comment:
+          type: string
+        removeTags:
+          type: array
+          items:
+            type: string
+    Notification:
+      type: object
+      required: [id, type, severity, title, body, link, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, error, success]
+        title:
+          type: string
+        body:
+          type: string
+        link:
+          type: string
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    NotificationPage:
+      type: object
+      required: [items, page, pageSize, total, unread]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        unread:
+          type: integer
+    RecommendationSettings:
+      type: object
+      required: [n1, n2, autoFill, items]
+      properties:
+        n1:
+          type: integer
+        n2:
+          type: integer
+        autoFill:
+          type: boolean
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              position:
+                type: integer
+              entityType:
+                type: string
+                enum: [article, album]
+              entityId:
+                type: string
+                format: uuid
+              title:
+                type: string
+    CandidateList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              entityType:
+                type: string
+                enum: [article, album]
+              entityId:
+                type: string
+                format: uuid
+              title:
+                type: string
+              updatedAt:
+                type: string
+                format: date-time
+    TagUsage:
+      type: object
+      required: [id, scope, name, active, usage]
+      properties:
+        id:
+          type: string
+          format: uuid
+        scope:
+          type: string
+          enum: [article, photo]
+        name:
+          type: string
+        active:
+          type: boolean
+        usage:
+          type: integer
+    TagUsageList:
+      type: object
+      required: [scope, items]
+      properties:
+        scope:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TagUsage"
+    SystemInfo:
+      type: object
+      required: [version, buildStatus, storageUsage, appEnv, maxArticleMB, maxPhotoMB, batchLimit]
+      properties:
+        version:
+          type: string
+        buildStatus:
+          type: string
+        storageUsage:
+          type: integer
+          format: int64
+        jobStatus:
+          type: object
+          additionalProperties: true
+        updatedAt:
+          type: string
+          format: date-time
+        appEnv:
+          type: string
+        maxArticleMB:
+          type: integer
+        maxPhotoMB:
+          type: integer
+        batchLimit:
+          type: integer
+        processor:
+          type: string
+        accessTokenTTL:
+          type: string
+        refreshTokenTTL:
+          type: string
+        cookieSecure:
+          type: boolean
+        watermark:
+          type: string

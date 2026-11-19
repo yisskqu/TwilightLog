@@ -465,6 +465,19 @@ func (s *Service) removeAsset(ctx context.Context, asset Asset) error {
 	return s.repo.Delete(ctx, asset.ID)
 }
 
+// Purge removes one asset's original, master, derivatives and database row.
+// It is used when trashed content is permanently deleted.
+func (s *Service) Purge(ctx context.Context, mediaID string) error {
+	asset, err := s.repo.Get(ctx, mediaID)
+	if errors.Is(err, ErrNotFound) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return s.removeAsset(ctx, asset)
+}
+
 // SignedFilePath verifies a signed GET capability and returns a local file path.
 func (s *Service) SignedFilePath(key, token string, now time.Time) (string, error) {
 	local, ok := s.backend.(interface {

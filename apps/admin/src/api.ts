@@ -41,6 +41,148 @@ export type AuditEntry = {
   createdAt: string;
 };
 
+export type ContentType = "article_column" | "article" | "photo_column" | "album" | "photo";
+
+export type WorkspaceStatus = "draft" | "pending" | "rejected" | "published" | "offline" | "trashed";
+
+export type WorkspaceItem = {
+  id: string;
+  type: ContentType;
+  slug: string;
+  title: string;
+  status: WorkspaceStatus;
+  workingStatus: string;
+  versionId: string;
+  versionNo: number;
+  hasPublished: boolean;
+  parentId: string;
+  parentTitle: string;
+  ownerId: string;
+  ownerName: string;
+  updatedAt: string;
+  trashedAt: string | null;
+  mediaCount: number;
+};
+
+export type WorkspaceStats = {
+  type: ContentType;
+  total: number;
+  draft: number;
+  pending: number;
+  rejected: number;
+  published: number;
+  offline: number;
+  trashed: number;
+};
+
+export type WorkspaceSummary = {
+  stats: WorkspaceStats[];
+  pendingTotal: number;
+};
+
+export type WorkspacePage = Page<WorkspaceItem> & { totalPages: number };
+
+export type ContentVersion = {
+  id: string;
+  status: "draft" | "pending" | "rejected" | "approved";
+  versionNo: number;
+  payload: Record<string, unknown>;
+  comment: string;
+  updatedAt: string;
+  submittedAt: string | null;
+  publishedAt: string | null;
+};
+
+export type WorkspaceDetail = WorkspaceItem & {
+  working: ContentVersion | null;
+  published: ContentVersion | null;
+};
+
+export type ReviewItem = {
+  versionId: string;
+  type: ContentType;
+  entityId: string;
+  title: string;
+  versionNo: number;
+  status: string;
+  authorId: string;
+  authorName: string;
+  submittedAt: string | null;
+  updatedAt: string;
+  hasPublished: boolean;
+  payload: Record<string, unknown>;
+};
+
+export type ReviewDetail = ReviewItem & {
+  published: Record<string, unknown>;
+  tags: string[];
+  publishedAt: string | null;
+};
+
+export type NotificationItem = {
+  id: string;
+  type: string;
+  severity: "info" | "warning" | "error" | "success";
+  title: string;
+  body: string;
+  link: string;
+  readAt: string | null;
+  createdAt: string;
+};
+
+export type NotificationPage = Page<NotificationItem> & { unread: number };
+
+export type RecommendationItem = {
+  position: number;
+  entityType: "article" | "album";
+  entityId: string;
+  title: string;
+};
+
+export type RecommendationSettings = {
+  n1: number;
+  n2: number;
+  autoFill: boolean;
+  items: RecommendationItem[];
+};
+
+export type Candidate = {
+  entityType: "article" | "album";
+  entityId: string;
+  title: string;
+  updatedAt: string;
+};
+
+export type TagUsage = {
+  id: string;
+  scope: "article" | "photo";
+  name: string;
+  active: boolean;
+  usage: number;
+};
+
+export type SystemInfo = {
+  version: string;
+  buildStatus: string;
+  storageUsage: number;
+  jobStatus: Record<string, unknown>;
+  updatedAt: string;
+  appEnv: string;
+  maxArticleMB: number;
+  maxPhotoMB: number;
+  batchLimit: number;
+  processor: string;
+  accessTokenTTL: string;
+  refreshTokenTTL: string;
+  cookieSecure: boolean;
+  watermark: string;
+};
+
+export function isMobileViewport(): boolean {
+  return typeof window !== "undefined" && window.matchMedia("(max-width: 860px)").matches;
+}
+
+
 type SessionResponse = {
   accessToken: string;
   expiresIn: number;
@@ -81,6 +223,7 @@ async function rawRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (accessToken) {
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
+  headers.set("X-Client-Device", isMobileViewport() ? "mobile" : "desktop");
 
   const response = await fetch(path, {
     ...init,

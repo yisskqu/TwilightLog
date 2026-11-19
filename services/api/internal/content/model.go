@@ -208,6 +208,15 @@ type Recommendation struct {
 	Album   *Album
 }
 
+// RecommendationConfig is the published home page selection plus the counts
+// configured by administrators.
+type RecommendationConfig struct {
+	Items    []Recommendation
+	N1       int
+	N2       int
+	AutoFill bool
+}
+
 // Page is the shared pagination envelope.
 type Page[T any] struct {
 	Items      []T `json:"items"`

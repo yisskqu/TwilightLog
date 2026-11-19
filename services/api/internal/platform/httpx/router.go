@@ -80,9 +80,19 @@ func NewRouterWithOptions(opts Options) http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/capabilities", func(w http.ResponseWriter, r *http.Request) {
 			WriteJSON(w, http.StatusOK, map[string]any{
-				"modules":     []string{},
-				"menus":       []string{},
-				"permissions": []string{},
+				"modules": []string{"content", "media", "review", "recommendation", "account", "audit", "notification", "system"},
+				"menus": []string{
+					"workspace", "reviews", "recommendations", "users",
+					"recycle", "notifications", "tags", "system", "audit", "media",
+				},
+				"permissions": []string{
+					"admin.access", "content.read", "content.write_own", "content.manage_all",
+					"review.manage", "account.manage", "system.manage", "audit.read",
+				},
+				"desktopOnly": []string{
+					"content.purge", "account.create", "account.role", "account.reset_password",
+					"account.status", "review.replace_public", "tag.rename", "tag.merge", "tag.disable",
+				},
 			})
 		})
 		if opts.Register != nil {
@@ -116,7 +126,7 @@ func CORS(origins []string) func(http.Handler) http.Handler {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
 				w.Header().Set("Access-Control-Allow-Credentials", "true")
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
-				w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-ID, Idempotency-Key")
+				w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-ID, Idempotency-Key, X-Client-Device")
 				w.Header().Set("Access-Control-Max-Age", "600")
 				w.Header().Add("Vary", "Origin")
 			}
