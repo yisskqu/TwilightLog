@@ -28,6 +28,9 @@ coverage/
 playwright-report/
 test-results/
 
+# Large generated test fixture (recreate with testdata/generate-test-images.py)
+testdata/images/oversized-51mb.jpg
+
 # Editor / OS
 .vscode/
 .idea/
