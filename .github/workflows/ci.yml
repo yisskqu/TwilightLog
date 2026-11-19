@@ -46,7 +46,9 @@ jobs:
         run: go vet ./...
 
       - name: Test
-        run: go test ./...
+        # DB-backed integration tests truncate shared tables, so packages must
+        # not run against the same PostgreSQL instance concurrently.
+        run: go test -p 1 ./...
 
       - name: Install staticcheck
         run: |
