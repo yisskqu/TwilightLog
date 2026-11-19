@@ -16,6 +16,7 @@ RUN go mod download
 COPY services/api ./
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/api ./cmd/api
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/migrate ./cmd/migrate
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/seed ./cmd/seed
 
 FROM ${RUNTIME_IMAGE}
 
@@ -26,6 +27,7 @@ WORKDIR /app
 
 COPY --from=build /out/api /app/api
 COPY --from=build /out/migrate /app/migrate
+COPY --from=build /out/seed /app/seed
 
 RUN mkdir -p /app/var/uploads && chown -R app:app /app/var
 
