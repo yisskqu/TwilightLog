@@ -9,11 +9,11 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "@astrojs/react": "^4.0.0",
-    "@astrojs/sitemap": "^3.7.5",
+    "@astrojs/react": "^7.1.9",
+    "@astrojs/sitemap": "^3.7.6",
     "@twilightlog/api-client": "workspace:*",
     "@twilightlog/design-tokens": "workspace:*",
-    "astro": "^5.0.0",
+    "astro": "^7.4.13",
     "katex": "^0.18.11",
     "marked": "^18.2.1",
     "marked-katex-extension": "^5.1.13",
@@ -22,7 +22,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.0",
+    "@astrojs/check": "^0.9.12",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "typescript": "^5.9.0"
