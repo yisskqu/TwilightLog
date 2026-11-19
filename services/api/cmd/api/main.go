@@ -10,10 +10,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/yisskqu/TwilightLog/services/api/internal/accounts"
+	"github.com/yisskqu/TwilightLog/services/api/internal/audit"
+	"github.com/yisskqu/TwilightLog/services/api/internal/auth"
 	"github.com/yisskqu/TwilightLog/services/api/internal/migrations"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/config"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/db"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/httpx"
+	"github.com/yisskqu/TwilightLog/services/api/internal/server"
 )
 
 func main() {
@@ -44,9 +48,28 @@ func main() {
 		logger.Info("database migrations applied")
 	}
 
+	auditService := audit.NewService(pool)
+	authService, err := auth.NewService(pool, cfg, logger, auditService)
+	if err != nil {
+		logger.Error("initialize auth service", "error", err)
+		os.Exit(1)
+	}
+	accountsService := accounts.NewService(pool, auditService)
+
+	handler := httpx.NewRouterWithOptions(httpx.Options{
+		Pinger:      pool,
+		Logger:      logger,
+		CORSOrigins: cfg.CORSOrigins,
+		Register: server.Register(server.Deps{
+			Auth:     authService,
+			Accounts: accountsService,
+			Audit:    auditService,
+		}),
+	})
+
 	server := &http.Server{
 		Addr:              cfg.HTTPAddr,
-		Handler:           httpx.NewRouter(pool, logger),
+		Handler:           handler,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,
