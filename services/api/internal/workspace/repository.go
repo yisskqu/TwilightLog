@@ -209,9 +209,9 @@ func (r *Repository) Stats(ctx context.Context, info TypeInfo, ownerID string) (
 
 // PendingCount counts pending submissions for one type.
 func (r *Repository) PendingCount(ctx context.Context, info TypeInfo, ownerID string) (int, error) {
-	sql := fmt.Sprintf(`SELECT count(*) FROM content_versions cv
+	sql := `SELECT count(*) FROM content_versions cv
 		WHERE cv.entity_type = $1 AND cv.status = 'pending'
-		  AND ($2 = '' OR cv.created_by::text = $2)`)
+		  AND ($2 = '' OR cv.created_by::text = $2)`
 	var count int
 	if err := r.pool.QueryRow(ctx, sql, info.Code, ownerID).Scan(&count); err != nil {
 		return 0, fmt.Errorf("count pending %s: %w", info.Code, err)
