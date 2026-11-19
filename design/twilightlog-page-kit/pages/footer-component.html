@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页脚组件</title>
+    <style id="theme-vars">
+:root {
+  /* 冷白底色与冷墨色：中性偏蓝的低饱和，保持单一色相 */
+  --twilight-background: #f5f7fa;
+  --twilight-foreground: #14161a;
+  --twilight-card: #fbfcfe;
+  --twilight-card-foreground: #14161a;
+  --twilight-popover: #fbfcfe;
+  --twilight-popover-foreground: #14161a;
+
+  /* 单一主色：墨色本身即主色，不引入第二种饱和色相 */
+  --twilight-primary: #14161a;
+  --twilight-primary-foreground: #f5f7fa;
+
+  /* 次级表面与辅助文字 */
+  --twilight-muted: #e9edf2;
+  --twilight-muted-foreground: #626a75;
+
+  /* 发丝线与输入描边 */
+  --twilight-border: #d6dbe2;
+  --twilight-input: #d6dbe2;
+  --twilight-ring: #14161a;
+
+  /* 圆角：克制，仅 2 / 4 / 8 */
+  --twilight-radius-sm: 2px;
+  --twilight-radius-md: 4px;
+  --twilight-radius-lg: 8px;
+
+  /* 字体：拉丁用几何无衬线，中文回落到系统黑体 */
+  --twilight-font-sans: "Inter", "Helvetica Neue", "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --twilight-font-mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  /* 排版节奏 */
+  --twilight-label-size: 14px;
+  --twilight-body-size: 17px;
+  --twilight-title-size: 21px;
+  --twilight-hairline: rgba(20, 22, 26, 0.1);
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--twilight-background);
+    --color-foreground: var(--twilight-foreground);
+    --color-card: var(--twilight-card);
+    --color-card-foreground: var(--twilight-card-foreground);
+    --color-popover: var(--twilight-popover);
+    --color-popover-foreground: var(--twilight-popover-foreground);
+    --color-primary: var(--twilight-primary);
+    --color-primary-foreground: var(--twilight-primary-foreground);
+    --color-muted: var(--twilight-muted);
+    --color-muted-foreground: var(--twilight-muted-foreground);
+    --color-border: var(--twilight-border);
+    --color-input: var(--twilight-input);
+    --color-ring: var(--twilight-ring);
+    --radius-sm: var(--twilight-radius-sm);
+    --radius-md: var(--twilight-radius-md);
+    --radius-lg: var(--twilight-radius-lg);
+  }
+  @layer base {
+    body { background: var(--twilight-background); color: var(--twilight-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--twilight-background); }
+      .text-background { color: var(--twilight-background); }
+      .border-background { border-color: var(--twilight-background); }
+      .ring-background { --tw-ring-color: var(--twilight-background); }
+      .bg-foreground { background-color: var(--twilight-foreground); }
+      .text-foreground { color: var(--twilight-foreground); }
+      .border-foreground { border-color: var(--twilight-foreground); }
+      .ring-foreground { --tw-ring-color: var(--twilight-foreground); }
+      .bg-card { background-color: var(--twilight-card); }
+      .text-card { color: var(--twilight-card); }
+      .border-card { border-color: var(--twilight-card); }
+      .ring-card { --tw-ring-color: var(--twilight-card); }
+      .bg-card-foreground { background-color: var(--twilight-card-foreground); }
+      .text-card-foreground { color: var(--twilight-card-foreground); }
+      .border-card-foreground { border-color: var(--twilight-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--twilight-card-foreground); }
+      .bg-popover { background-color: var(--twilight-popover); }
+      .text-popover { color: var(--twilight-popover); }
+      .border-popover { border-color: var(--twilight-popover); }
+      .ring-popover { --tw-ring-color: var(--twilight-popover); }
+      .bg-popover-foreground { background-color: var(--twilight-popover-foreground); }
+      .text-popover-foreground { color: var(--twilight-popover-foreground); }
+      .border-popover-foreground { border-color: var(--twilight-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--twilight-popover-foreground); }
+      .bg-primary { background-color: var(--twilight-primary); }
+      .text-primary { color: var(--twilight-primary); }
+      .border-primary { border-color: var(--twilight-primary); }
+      .ring-primary { --tw-ring-color: var(--twilight-primary); }
+      .bg-primary-foreground { background-color: var(--twilight-primary-foreground); }
+      .text-primary-foreground { color: var(--twilight-primary-foreground); }
+      .border-primary-foreground { border-color: var(--twilight-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--twilight-primary-foreground); }
+      .bg-muted { background-color: var(--twilight-muted); }
+      .text-muted { color: var(--twilight-muted); }
+      .border-muted { border-color: var(--twilight-muted); }
+      .ring-muted { --tw-ring-color: var(--twilight-muted); }
+      .bg-muted-foreground { background-color: var(--twilight-muted-foreground); }
+      .text-muted-foreground { color: var(--twilight-muted-foreground); }
+      .border-muted-foreground { border-color: var(--twilight-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--twilight-muted-foreground); }
+      .bg-border { background-color: var(--twilight-border); }
+      .text-border { color: var(--twilight-border); }
+      .border-border { border-color: var(--twilight-border); }
+      .ring-border { --tw-ring-color: var(--twilight-border); }
+      .bg-input { background-color: var(--twilight-input); }
+      .text-input { color: var(--twilight-input); }
+      .border-input { border-color: var(--twilight-input); }
+      .ring-input { --tw-ring-color: var(--twilight-input); }
+      .bg-ring { background-color: var(--twilight-ring); }
+      .text-ring { color: var(--twilight-ring); }
+      .border-ring { border-color: var(--twilight-ring); }
+      .ring-ring { --tw-ring-color: var(--twilight-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <main>
+      <div class="fw-annotation">
+        <span>TwilightLog · 页脚组件</span>
+        <span>桌面 1440</span>
+      </div>
+
+      <footer id="site-footer">
+        <div class="fw-top">
+          <div class="fw-brand">
+            <img src="../assets/logo-hikkitai.svg" alt="TwilightLog">
+          </div>
+
+          <nav class="fw-nav" aria-label="页脚导航">
+            <a href="/">
+              <span class="fw-idx">01.</span>
+              <span class="fw-lbl">首页</span>
+            </a>
+            <a href="/articles">
+              <span class="fw-idx">02.</span>
+              <span class="fw-lbl">文章</span>
+            </a>
+            <a href="/photos">
+              <span class="fw-idx">03.</span>
+              <span class="fw-lbl">摄影</span>
+            </a>
+            <a href="/search">
+              <span class="fw-idx">04.</span>
+              <span class="fw-lbl">搜索</span>
+            </a>
+            <a href="/about">
+              <span class="fw-idx">05.</span>
+              <span class="fw-lbl">关于</span>
+            </a>
+          </nav>
+        </div>
+
+        <div class="fw-bottom">
+          <section class="fw-cell" aria-labelledby="fw-label-contact">
+            <h2 class="fw-label" id="fw-label-contact">
+              <span class="fw-dot" aria-hidden="true"></span>联络
+            </h2>
+            <a class="fw-mail" href="mailto:hello@twilightlog.com">hello@twilightlog.com</a>
+          </section>
+
+          <section class="fw-cell" aria-labelledby="fw-label-follow">
+            <h2 class="fw-label" id="fw-label-follow">
+              <span class="fw-dot" aria-hidden="true"></span>关注
+            </h2>
+            <div class="fw-follow">
+              <a href="https://github.com/" rel="noopener">GitHub</a>
+              <a href="/rss.xml">RSS</a>
+            </div>
+          </section>
+
+          <section class="fw-cell fw-other" aria-labelledby="fw-label-other">
+            <h2 class="fw-label" id="fw-label-other">
+              <span class="fw-dot" aria-hidden="true"></span>其他
+            </h2>
+            <div class="fw-other-body">
+              <div class="fw-other-row">
+                <a href="/privacy">隐私政策</a>
+                <span class="fw-copy">© 2026 TwilightLog</span>
+              </div>
+              <div class="fw-beian">
+                <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">吉ICP备2026007165号-1</a>
+                <a class="fw-beian-police" href="https://beian.mps.gov.cn/#/query/webSearch?code=33011002020165" target="_blank" rel="noopener">
+                  <img src="../assets/icon-police-badge.png" alt="" aria-hidden="true">
+                  浙公网安备33011002020165号
+                </a>
+              </div>
+            </div>
+          </section>
+        </div>
+      </footer>
+    </main>
+
+    <style id="critical-layout">
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        overflow-x: hidden;
+        font-family: var(--twilight-font-sans);
+        background: var(--twilight-background);
+        color: var(--twilight-foreground);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ── 组件预览标注条 ── */
+      .fw-annotation {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        height: 56px;
+        padding: 0 24px;
+        border-bottom: 1px solid var(--twilight-hairline);
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1;
+        color: rgba(20, 22, 26, 0.45);
+      }
+
+      /* ── 页脚根 ── */
+      #site-footer {
+        display: block;
+        width: 100%;
+        background: var(--twilight-background);
+        color: var(--twilight-foreground);
+      }
+
+      /* ── 上区：品牌 + 导航 ── */
+      .fw-top {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        align-items: stretch;
+      }
+
+      .fw-brand {
+        grid-column: 2 / 5;
+        grid-row: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 640px;
+        padding: 0;
+      }
+
+      .fw-brand img {
+        display: block;
+        width: 640px;
+        max-width: 86%;
+        height: auto;
+      }
+
+      .fw-nav {
+        grid-column: 1;
+        grid-row: 1;
+        display: grid;
+        grid-template-rows: repeat(5, minmax(0, 1fr));
+        height: 640px;
+        border-right: 1px solid var(--twilight-hairline);
+      }
+
+      .fw-nav a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        min-height: 0;
+        padding: 0 16px 0 24px;
+        text-decoration: none;
+        color: var(--twilight-foreground);
+        transition: color 200ms ease;
+      }
+
+      .fw-nav a + a {
+        border-top: 1px solid var(--twilight-hairline);
+      }
+
+      .fw-idx {
+        flex: none;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        color: rgba(20, 22, 26, 0.45);
+        transition: color 200ms ease;
+      }
+
+      .fw-lbl {
+        font-size: 21px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: 0;
+        text-wrap: balance;
+        word-break: keep-all;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-decoration-color: transparent;
+        text-underline-offset: 4px;
+        transition: text-decoration-color 200ms ease;
+      }
+
+      .fw-nav a:hover .fw-lbl,
+      .fw-nav a:focus-visible .fw-lbl {
+        text-decoration-color: currentColor;
+      }
+
+      .fw-nav a:hover .fw-idx,
+      .fw-nav a:focus-visible .fw-idx {
+        color: rgba(20, 22, 26, 0.7);
+      }
+
+      .fw-nav a:focus-visible {
+        outline: 2px solid var(--twilight-foreground);
+        outline-offset: -2px;
+      }
+
+      /* ── 下区：信息单元 ── */
+      .fw-bottom {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        border-top: 1px solid var(--twilight-hairline);
+      }
+
+      .fw-cell {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 24px;
+        min-height: 240px;
+        padding: 32px 24px;
+      }
+
+      .fw-cell:nth-child(2) { grid-column: 2; }
+
+      .fw-cell + .fw-cell {
+        border-left: 1px solid var(--twilight-hairline);
+      }
+
+      .fw-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: 0;
+        color: rgba(20, 22, 26, 0.45);
+        text-wrap: balance;
+        word-break: keep-all;
+      }
+
+      .fw-dot {
+        flex: none;
+        width: 5px;
+        height: 5px;
+        border-radius: 999px;
+        background: currentColor;
+      }
+
+      .fw-mail {
+        font-size: 21px;
+        font-weight: 500;
+        line-height: 1.4;
+        color: var(--twilight-foreground);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-decoration-color: transparent;
+        text-underline-offset: 4px;
+        overflow-wrap: anywhere;
+        transition: text-decoration-color 200ms ease;
+      }
+
+      .fw-mail:hover,
+      .fw-mail:focus-visible {
+        text-decoration-color: currentColor;
+      }
+
+      .fw-follow {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .fw-follow a {
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 42px;
+        color: var(--twilight-foreground);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-decoration-color: transparent;
+        text-underline-offset: 4px;
+        transition: text-decoration-color 200ms ease;
+      }
+
+      .fw-follow a:hover,
+      .fw-follow a:focus-visible {
+        text-decoration-color: currentColor;
+      }
+
+      .fw-cell.fw-other {
+        grid-column: 3 / 5;
+        min-height: 240px;
+      }
+
+      .fw-other-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .fw-other-row a {
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.4;
+        color: var(--twilight-foreground);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-decoration-color: transparent;
+        text-underline-offset: 4px;
+        transition: text-decoration-color 200ms ease;
+      }
+
+      .fw-other-row a:hover,
+      .fw-other-row a:focus-visible {
+        text-decoration-color: currentColor;
+      }
+
+      .fw-copy {
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.4;
+        color: rgba(20, 22, 26, 0.45);
+        word-break: keep-all;
+      }
+
+      .fw-other-body {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .fw-beian {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 20px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: rgba(20, 22, 26, 0.55);
+      }
+
+      .fw-beian a {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: inherit;
+        font-weight: 500;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-decoration-color: transparent;
+        text-underline-offset: 4px;
+        transition: text-decoration-color 200ms ease;
+      }
+
+      .fw-beian a:hover,
+      .fw-beian a:focus-visible {
+        text-decoration-color: currentColor;
+      }
+
+      .fw-beian-police img {
+        display: block;
+        width: 14px;
+        height: 16px;
+      }
+
+      /* ── 入场：轻微位移 ── */
+      @keyframes fw-rise {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .fw-brand,
+      .fw-nav,
+      .fw-bottom {
+        animation: fw-rise 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      /* ── 平板：640–1023px ── */
+      @media (max-width: 1023.98px) {
+        .fw-top { grid-template-columns: minmax(0, 1fr); }
+
+        .fw-brand {
+          grid-column: 1 / -1;
+          grid-row: auto;
+          min-height: 260px;
+        }
+
+        .fw-brand img { width: 420px; max-width: 78%; }
+
+        .fw-nav {
+          grid-column: 1 / -1;
+          grid-row: auto;
+          height: auto;
+          grid-template-rows: none;
+          grid-auto-rows: auto;
+          border-right: 0;
+          border-top: 1px solid var(--twilight-hairline);
+        }
+
+        .fw-nav a { min-height: 128px; }
+      }
+
+      @media (min-width: 640px) and (max-width: 1023.98px) {
+        .fw-bottom {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .fw-cell:nth-child(2) { grid-column: 2; }
+
+        .fw-other {
+          grid-column: 1 / -1;
+          border-left: 0;
+          border-top: 1px solid var(--twilight-hairline);
+        }
+      }
+
+      /* ── 手机：< 640px ── */
+      @media (max-width: 639.98px) {
+        .fw-annotation { padding: 0 16px; }
+
+        .fw-brand { min-height: 180px; }
+        .fw-brand img { width: 280px; max-width: 82%; }
+
+        .fw-nav a {
+          min-height: 96px;
+          padding: 0 12px 0 16px;
+          gap: 12px;
+        }
+
+        .fw-lbl { font-size: 19px; }
+
+        .fw-bottom { grid-template-columns: minmax(0, 1fr); }
+
+        .fw-cell,
+        .fw-cell:nth-child(2) {
+          grid-column: 1 / -1;
+          min-height: 168px;
+          padding: 24px 16px;
+        }
+
+        .fw-cell + .fw-cell {
+          border-left: 0;
+          border-top: 1px solid var(--twilight-hairline);
+        }
+
+        .fw-other {
+          min-height: 168px;
+          border-top: 1px solid var(--twilight-hairline);
+        }
+
+        .fw-other-row { align-items: flex-start; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .fw-brand,
+        .fw-nav,
+        .fw-bottom {
+          animation: none;
+        }
+
+        .fw-nav a,
+        .fw-idx,
+        .fw-lbl,
+        .fw-mail,
+        .fw-follow a,
+        .fw-other-row a {
+          transition: none;
+        }
+      }
+    </style>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

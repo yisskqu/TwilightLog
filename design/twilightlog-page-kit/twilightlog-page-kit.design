@@ -1,0 +1,92 @@
+{
+  "data": [
+    {
+      "id": "page-footer-component",
+      "title": "页脚组件",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1795096451636,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 937,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-51a904b0",
+          "measuredAt": 1795098710981
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/footer-component.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "image-001",
+      "title": "TwilightLog 字标",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1795096637870,
+      "canvasData": {
+        "x": 0,
+        "y": 383,
+        "naturalSize": {
+          "width": 640,
+          "height": 171
+        }
+      },
+      "devMetadata": {
+        "imageSrc": "assets/logo-hikkitai.svg"
+      }
+    },
+    {
+      "id": "image-002",
+      "title": "公安备案徽标",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1795098674801,
+      "canvasData": {
+        "x": 480,
+        "y": 383,
+        "naturalSize": {
+          "width": 36,
+          "height": 40
+        }
+      },
+      "devMetadata": {
+        "imageSrc": "assets/icon-police-badge.png"
+      }
+    },
+    {
+      "id": "page-footer-component-mobile",
+      "title": "页脚组件 · 移动端",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1795099510476,
+      "canvasData": {
+        "x": 480,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 981,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-8cc215e9",
+          "measuredAt": 1795099641929
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/footer-component-mobile.html",
+        "interactions": []
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": true,
+    "deviceType": "desktop",
+    "projectName": "TwilightLog 页脚组件",
+    "visualEditorEnabled": true
+  }
+}

@@ -1,0 +1,78 @@
+---
+import {
+  footerNav,
+  contactEmail,
+  followLinks,
+  filings,
+  policeFiling,
+  copyright,
+} from "./footer-data";
+---
+
+<div class="sf-mobile">
+  <div class="sf-brand">
+    <img
+      src="/logo-hikkitai.svg"
+      alt="TwilightLog"
+      width="640"
+      height="171"
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
+
+  <nav class="sf-nav" aria-label="页脚导航">
+    {
+      footerNav.map((item) => (
+        <a href={item.href}>
+          <span class="sf-idx">{item.index}</span>
+          <span class="sf-lbl">{item.label}</span>
+        </a>
+      ))
+    }
+  </nav>
+
+  <section class="sf-cell sf-contact" aria-label="联络">
+    <h2 class="sf-label"><span class="sf-dot" aria-hidden="true"></span>联络</h2>
+    <a class="sf-mail" href={`mailto:${contactEmail}`}>{contactEmail}</a>
+  </section>
+
+  <section class="sf-cell sf-follow-cell" aria-label="关注">
+    <h2 class="sf-label"><span class="sf-dot" aria-hidden="true"></span>关注</h2>
+    <div class="sf-follow">
+      {
+        followLinks.map((link) => (
+          <a
+            href={link.href}
+            target={link.external ? "_blank" : undefined}
+            rel={link.external ? "noopener" : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="sf-cell sf-other" aria-label="其他">
+    <h2 class="sf-label"><span class="sf-dot" aria-hidden="true"></span>其他</h2>
+    <div class="sf-other-body">
+      <div class="sf-other-row">
+        <span class="sf-copy">{copyright}</span>
+      </div>
+      <div class="sf-beian">
+        {
+          filings.map((link) => (
+            <a href={link.href} target="_blank" rel="noopener">
+              {link.label}
+            </a>
+          ))
+        }
+        <a href={policeFiling.href} target="_blank" rel="noopener">
+          <img src="/icon-police-badge.png" alt="" aria-hidden="true" />
+          {policeFiling.label}
+        </a>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,37 @@
+:root {
+  /* 冷白底色与冷墨色：中性偏蓝的低饱和，保持单一色相 */
+  --twilight-background: #f5f7fa;
+  --twilight-foreground: #14161a;
+  --twilight-card: #fbfcfe;
+  --twilight-card-foreground: #14161a;
+  --twilight-popover: #fbfcfe;
+  --twilight-popover-foreground: #14161a;
+
+  /* 单一主色：墨色本身即主色，不引入第二种饱和色相 */
+  --twilight-primary: #14161a;
+  --twilight-primary-foreground: #f5f7fa;
+
+  /* 次级表面与辅助文字 */
+  --twilight-muted: #e9edf2;
+  --twilight-muted-foreground: #626a75;
+
+  /* 发丝线与输入描边 */
+  --twilight-border: #d6dbe2;
+  --twilight-input: #d6dbe2;
+  --twilight-ring: #14161a;
+
+  /* 圆角：克制，仅 2 / 4 / 8 */
+  --twilight-radius-sm: 2px;
+  --twilight-radius-md: 4px;
+  --twilight-radius-lg: 8px;
+
+  /* 字体：拉丁用几何无衬线，中文回落到系统黑体 */
+  --twilight-font-sans: "Inter", "Helvetica Neue", "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --twilight-font-mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  /* 排版节奏 */
+  --twilight-label-size: 14px;
+  --twilight-body-size: 17px;
+  --twilight-title-size: 21px;
+  --twilight-hairline: rgba(20, 22, 26, 0.1);
+}

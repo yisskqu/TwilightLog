@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页脚组件 · 移动端</title>
+    <style id="theme-vars">
+:root {
+  /* 冷白底色与冷墨色：中性偏蓝的低饱和，保持单一色相 */
+  --twilight-background: #f5f7fa;
+  --twilight-foreground: #14161a;
+  --twilight-card: #fbfcfe;
+  --twilight-card-foreground: #14161a;
+  --twilight-popover: #fbfcfe;
+  --twilight-popover-foreground: #14161a;
+
+  /* 单一主色：墨色本身即主色，不引入第二种饱和色相 */
+  --twilight-primary: #14161a;
+  --twilight-primary-foreground: #f5f7fa;
+
+  /* 次级表面与辅助文字 */
+  --twilight-muted: #e9edf2;
+  --twilight-muted-foreground: #626a75;
+
+  /* 发丝线与输入描边 */
+  --twilight-border: #d6dbe2;
+  --twilight-input: #d6dbe2;
+  --twilight-ring: #14161a;
+
+  /* 圆角：克制，仅 2 / 4 / 8 */
+  --twilight-radius-sm: 2px;
+  --twilight-radius-md: 4px;
+  --twilight-radius-lg: 8px;
+
+  /* 字体：拉丁用几何无衬线，中文回落到系统黑体 */
+  --twilight-font-sans: "Inter", "Helvetica Neue", "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --twilight-font-mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  /* 排版节奏 */
+  --twilight-label-size: 14px;
+  --twilight-body-size: 17px;
+  --twilight-title-size: 21px;
+  --twilight-hairline: rgba(20, 22, 26, 0.1);
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--twilight-background);
+    --color-foreground: var(--twilight-foreground);
+    --color-card: var(--twilight-card);
+    --color-card-foreground: var(--twilight-card-foreground);
+    --color-popover: var(--twilight-popover);
+    --color-popover-foreground: var(--twilight-popover-foreground);
+    --color-primary: var(--twilight-primary);
+    --color-primary-foreground: var(--twilight-primary-foreground);
+    --color-muted: var(--twilight-muted);
+    --color-muted-foreground: var(--twilight-muted-foreground);
+    --color-border: var(--twilight-border);
+    --color-input: var(--twilight-input);
+    --color-ring: var(--twilight-ring);
+    --radius-sm: var(--twilight-radius-sm);
+    --radius-md: var(--twilight-radius-md);
+    --radius-lg: var(--twilight-radius-lg);
+  }
+  @layer base {
+    body { background: var(--twilight-background); color: var(--twilight-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--twilight-background); }
+      .text-background { color: var(--twilight-background); }
+      .border-background { border-color: var(--twilight-background); }
+      .ring-background { --tw-ring-color: var(--twilight-background); }
+      .bg-foreground { background-color: var(--twilight-foreground); }
+      .text-foreground { color: var(--twilight-foreground); }
+      .border-foreground { border-color: var(--twilight-foreground); }
+      .ring-foreground { --tw-ring-color: var(--twilight-foreground); }
+      .bg-card { background-color: var(--twilight-card); }
+      .text-card { color: var(--twilight-card); }
+      .border-card { border-color: var(--twilight-card); }
+      .ring-card { --tw-ring-color: var(--twilight-card); }
+      .bg-card-foreground { background-color: var(--twilight-card-foreground); }
+      .text-card-foreground { color: var(--twilight-card-foreground); }
+      .border-card-foreground { border-color: var(--twilight-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--twilight-card-foreground); }
+      .bg-popover { background-color: var(--twilight-popover); }
+      .text-popover { color: var(--twilight-popover); }
+      .border-popover { border-color: var(--twilight-popover); }
+      .ring-popover { --tw-ring-color: var(--twilight-popover); }
+      .bg-popover-foreground { background-color: var(--twilight-popover-foreground); }
+      .text-popover-foreground { color: var(--twilight-popover-foreground); }
+      .border-popover-foreground { border-color: var(--twilight-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--twilight-popover-foreground); }
+      .bg-primary { background-color: var(--twilight-primary); }
+      .text-primary { color: var(--twilight-primary); }
+      .border-primary { border-color: var(--twilight-primary); }
+      .ring-primary { --tw-ring-color: var(--twilight-primary); }
+      .bg-primary-foreground { background-color: var(--twilight-primary-foreground); }
+      .text-primary-foreground { color: var(--twilight-primary-foreground); }
+      .border-primary-foreground { border-color: var(--twilight-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--twilight-primary-foreground); }
+      .bg-muted { background-color: var(--twilight-muted); }
+      .text-muted { color: var(--twilight-muted); }
+      .border-muted { border-color: var(--twilight-muted); }
+      .ring-muted { --tw-ring-color: var(--twilight-muted); }
+      .bg-muted-foreground { background-color: var(--twilight-muted-foreground); }
+      .text-muted-foreground { color: var(--twilight-muted-foreground); }
+      .border-muted-foreground { border-color: var(--twilight-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--twilight-muted-foreground); }
+      .bg-border { background-color: var(--twilight-border); }
+      .text-border { color: var(--twilight-border); }
+      .border-border { border-color: var(--twilight-border); }
+      .ring-border { --tw-ring-color: var(--twilight-border); }
+      .bg-input { background-color: var(--twilight-input); }
+      .text-input { color: var(--twilight-input); }
+      .border-input { border-color: var(--twilight-input); }
+      .ring-input { --tw-ring-color: var(--twilight-input); }
+      .bg-ring { background-color: var(--twilight-ring); }
+      .text-ring { color: var(--twilight-ring); }
+      .border-ring { border-color: var(--twilight-ring); }
+      .ring-ring { --tw-ring-color: var(--twilight-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+    <main>
+      <footer id="site-footer">
+        <div class="fm-brand">
+          <img src="../assets/logo-hikkitai.svg" alt="TwilightLog">
+        </div>
+
+        <nav class="fm-nav" aria-label="页脚导航">
+          <a href="/">
+            <span class="fm-idx">01.</span>
+            <span class="fm-lbl">首页</span>
+          </a>
+          <a href="/articles">
+            <span class="fm-idx">02.</span>
+            <span class="fm-lbl">文章</span>
+          </a>
+          <a href="/photos">
+            <span class="fm-idx">03.</span>
+            <span class="fm-lbl">摄影</span>
+          </a>
+          <a href="/search">
+            <span class="fm-idx">04.</span>
+            <span class="fm-lbl">搜索</span>
+          </a>
+          <a href="/about">
+            <span class="fm-idx">05.</span>
+            <span class="fm-lbl">关于</span>
+          </a>
+        </nav>
+
+        <section class="fm-cell fm-contact" aria-labelledby="fm-label-contact">
+          <h2 class="fm-label" id="fm-label-contact">
+            <span class="fm-dot" aria-hidden="true"></span>联络
+          </h2>
+          <a class="fm-mail" href="mailto:hello@twilightlog.com">hello@twilightlog.com</a>
+        </section>
+
+        <section class="fm-cell fm-follow-cell" aria-labelledby="fm-label-follow">
+          <h2 class="fm-label" id="fm-label-follow">
+            <span class="fm-dot" aria-hidden="true"></span>关注
+          </h2>
+          <div class="fm-follow">
+            <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+            <a href="/rss.xml">RSS</a>
+          </div>
+        </section>
+
+        <section class="fm-cell fm-other" aria-labelledby="fm-label-other">
+          <h2 class="fm-label" id="fm-label-other">
+            <span class="fm-dot" aria-hidden="true"></span>其他
+          </h2>
+          <div class="fm-other-body">
+            <div class="fm-other-row">
+              <a class="fm-privacy" href="/privacy">隐私政策</a>
+              <span class="fm-copy">© 2026 TwilightLog</span>
+            </div>
+            <div class="fm-beian">
+              <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">吉ICP备2026007165号-1</a>
+            </div>
+            <div class="fm-beian">
+              <a class="fm-police" href="https://beian.mps.gov.cn/#/query/webSearch?code=33011002020165" target="_blank" rel="noopener">
+                <img src="../assets/icon-police-badge.png" alt="" aria-hidden="true">
+                浙公网安备33011002020165号
+              </a>
+            </div>
+          </div>
+        </section>
+      </footer>
+    </main>
+
+    <style id="critical-layout">
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        overflow-x: hidden;
+        font-family: var(--twilight-font-sans);
+        background: var(--twilight-background);
+        color: var(--twilight-foreground);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      /* ── 页脚根：390 宽单列，宽屏下收敛到 480 居中 ── */
+      #site-footer {
+        display: block;
+        width: 100%;
+        max-width: 480px;
+        margin-inline: auto;
+        padding-bottom: calc(28px + env(safe-area-inset-bottom));
+        background: var(--twilight-background);
+        color: var(--twilight-foreground);
+        animation: fm-rise 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      /* ── 字标区 ── */
+      .fm-brand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 20px 40px;
+      }
+
+      .fm-brand img {
+        display: block;
+        width: 240px;
+        max-width: 100%;
+        height: auto;
+      }
+
+      /* ── 导航区 ── */
+      .fm-nav {
+        display: block;
+      }
+
+      .fm-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 64px;
+        padding: 0 20px;
+        border-top: 1px solid var(--twilight-hairline);
+        text-decoration: none;
+        color: var(--twilight-foreground);
+        -webkit-tap-highlight-color: transparent;
+        transition: background-color 120ms ease;
+      }
+
+      .fm-nav a:active {
+        background-color: rgba(20, 22, 26, 0.04);
+      }
+
+      .fm-nav a:focus-visible {
+        outline: 2px solid var(--twilight-foreground);
+        outline-offset: -2px;
+      }
+
+      .fm-idx {
+        flex: none;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        color: rgba(20, 22, 26, 0.45);
+      }
+
+      .fm-lbl {
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.3;
+        word-break: keep-all;
+      }
+
+      /* ── 信息区单元 ── */
+      .fm-cell {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 24px 20px;
+        border-top: 1px solid var(--twilight-hairline);
+      }
+
+      .fm-contact { min-height: 112px; }
+      .fm-follow-cell { min-height: 184px; }
+      .fm-other { min-height: 184px; }
+
+      .fm-label {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.2;
+        color: rgba(20, 22, 26, 0.45);
+        word-break: keep-all;
+      }
+
+      .fm-dot {
+        flex: none;
+        width: 4px;
+        height: 4px;
+        margin-right: 8px;
+        border-radius: 999px;
+        background: currentColor;
+      }
+
+      /* ── 联络 ── */
+      .fm-mail {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        align-self: flex-start;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.4;
+        color: var(--twilight-foreground);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-decoration-color: transparent;
+        text-underline-offset: 3px;
+        overflow-wrap: anywhere;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .fm-mail:hover,
+      .fm-mail:active,
+      .fm-mail:focus-visible {
+        text-decoration-color: currentColor;
+      }
+
+      /* ── 关注 ── */
+      .fm-follow {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .fm-follow a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding-block: 10px;
+        margin-block: -10px;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.4;
+        color: var(--twilight-foreground);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-decoration-color: transparent;
+        text-underline-offset: 3px;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .fm-follow a:hover,
+      .fm-follow a:active,
+      .fm-follow a:focus-visible {
+        text-decoration-color: currentColor;
+      }
+
+      /* ── 其他 ── */
+      .fm-other-body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+      }
+
+      .fm-other-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        width: 100%;
+      }
+
+      .fm-other-row a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding-block: 13px;
+        margin-block: -13px;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.4;
+        color: var(--twilight-foreground);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-decoration-color: transparent;
+        text-underline-offset: 3px;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .fm-other-row a:hover,
+      .fm-other-row a:active,
+      .fm-other-row a:focus-visible {
+        text-decoration-color: currentColor;
+      }
+
+      .fm-copy {
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.4;
+        color: rgba(20, 22, 26, 0.45);
+        word-break: keep-all;
+      }
+
+      .fm-beian {
+        display: flex;
+        align-items: center;
+        width: 100%;
+      }
+
+      .fm-beian a {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 44px;
+        padding-block: 13px;
+        margin-block: -13px;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.4;
+        color: rgba(20, 22, 26, 0.55);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-decoration-color: transparent;
+        text-underline-offset: 3px;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .fm-beian a:hover,
+      .fm-beian a:active,
+      .fm-beian a:focus-visible {
+        text-decoration-color: currentColor;
+      }
+
+      .fm-police img {
+        display: block;
+        flex: none;
+        width: 12px;
+        height: 14px;
+      }
+
+      /* ── 入场：6px 轻微上移，仅一次 ── */
+      @keyframes fm-rise {
+        from { transform: translateY(6px); }
+        to { transform: translateY(0); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #site-footer { animation: none; }
+        .fm-nav a,
+        .fm-mail,
+        .fm-follow a,
+        .fm-other-row a,
+        .fm-beian a { transition: none; }
+      }
+    </style>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
