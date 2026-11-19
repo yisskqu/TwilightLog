@@ -61,7 +61,7 @@ def main() -> None:
             piexif.GPSIFD.GPSLatitudeRef: b"N",
             piexif.GPSIFD.GPSLatitude: ((31, 1), (12, 1), (3456, 100)),
             piexif.GPSIFD.GPSLongitudeRef: b"E",
-            piexif.GPSIFD.GPSLongitude: ((121, 1), (28, 1), (7890, 100)),
+            piexif.GPSIFD.GPSLongitude: ((121, 1), (28, 1), (1234, 100)),
         },
         "1st": {},
         "thumbnail": None,
