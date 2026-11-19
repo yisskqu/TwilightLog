@@ -1,0 +1,41 @@
+---
+import type { ArticleSummary } from "../lib/api";
+import { formatDate, imageSource } from "../lib/format";
+
+interface Props {
+  article: ArticleSummary;
+  reveal?: boolean;
+}
+
+const { article, reveal = false } = Astro.props;
+const image = imageSource(article.cover, "w960");
+const href = `/articles/${article.column.slug}/${article.slug}`;
+---
+
+<a class:list={["card", { reveal }]} href={href}>
+  <div class:list={["card-media", { "no-image": !image }]}>
+    {
+      image ? (
+        <img
+          src={image.src}
+          srcset={image.srcset}
+          sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw"
+          width={image.width}
+          height={image.height}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      ) : null
+    }
+  </div>
+  <div class="card-body">
+    <p class="eyebrow">{article.column.name}</p>
+    <h3>{article.title}</h3>
+    <p>{article.summary}</p>
+    <p class="meta">
+      {formatDate(article.publishedAt)}
+      {article.tags.length ? ` · ${article.tags.slice(0, 2).join(" / ")}` : ""}
+    </p>
+  </div>
+</a>

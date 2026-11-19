@@ -9,12 +9,13 @@ TwilightLog 是一个以文章与摄影作品为核心的个人图文博客，�
 - 阶段 2：账号、角色、权限、会话与审计已接通；后台提供登录、路由守卫、账号管理和审计页面。
 - 阶段 3：媒体上传与图片管线已接通；支持预签名直传、分片上传、格式校验、EXIF 白名单、方向纠正、BlurHash、WebP 衍生图与水印，原图保持私有。
 - 阶段 4：内容模型与公开只读 API 已接通；包含五类内容的多态版本、标签作用域隔离、筛选/排序/分页、搜索、ETag 与可重复导入的种子数据。
+- 阶段 5：公开站静态 MVP 已可用；首页推荐与补位、文章目录/代码复制/公式/图示、摄影瀑布流与照片查看器、搜索筛选、深浅色与响应式、SEO 与 sitemap 均已接通。
 - 开发顺序、任务拆分和验收标准见 [开发文档](docs/开发文档.md)。
 - 产品规则以 [PRD](docs/article-photography-prd.md) 为准。
 
 ## 技术栈
 
-- 公开站：Astro + React islands + Tailwind CSS
+- 公开站：Astro 静态生成 + React islands + 原生 CSS 设计 token
 - 管理后台：Vite + React + TypeScript + Tailwind CSS
 - API：Go + chi + pgx + goose
 - 数据库：PostgreSQL 16
@@ -148,6 +149,27 @@ docker exec twilightlog-api /app/seed --owner admin
 列表通用参数：`page`、`pageSize`（默认 12，最大 50）、`q`、`tags`（逗号分隔，逻辑 AND）、`dateFrom`、`dateTo`、`sort=latest|oldest`。文章与标签按作用域隔离；未公开、待审、下线、回收站内容以及空相册不会出现在任何公开响应中。
 
 搜索使用 PostgreSQL `pg_trgm` 与去代码块的正文索引；当前标准 PostgreSQL 镜像不含 `pg_jieba`/`zhparser`，后续可在不改接口的前提下替换为中文分词。
+
+### 公开站
+
+公开站由 Astro 静态生成，开发期按请求读取 API，构建期生成纯静态 HTML。
+
+| 页面 | 路径 |
+|---|---|
+| 首页（推荐与入口） | `/` |
+| 文章专栏列表 / 专栏文章 | `/articles`、`/articles/{column}` |
+| 文章详情 | `/articles/{column}/{slug}` |
+| 摄影专栏列表 / 专栏相册 | `/photos`、`/photos/{column}` |
+| 相册详情（瀑布流与查看器） | `/photos/{column}/{album}` |
+| 全部照片 | `/photos/all` |
+| 搜索与筛选 | `/search` |
+
+```powershell
+pnpm --filter @twilightlog/web dev     # http://127.0.0.1:4321
+pnpm --filter @twilightlog/web build   # 输出 apps/web/dist
+```
+
+构建默认从 `http://localhost:8080` 拉取数据，可用 `API_BASE_URL` 指向其他 API，用 `SITE_URL` 指定 canonical 域名。开发服务器会缓存预渲染页面，修改种子或 API 数据后需重启 `pnpm dev:web` 才能看到新内容。
 
 ### 认证接口
 

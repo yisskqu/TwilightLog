@@ -1,0 +1,30 @@
+---
+import type { Asset } from "../lib/api";
+import { imageSource } from "../lib/format";
+
+interface Props {
+  href: string;
+  name: string;
+  description: string;
+  cover: Asset | null;
+  count: number;
+  countLabel: string;
+}
+
+const { href, name, description, cover, count, countLabel } = Astro.props;
+const image = imageSource(cover, "w480");
+---
+
+<a class="column-card" href={href}>
+  <div class="thumb">
+    {image ? <img src={image.src} width={image.width} height={image.height} alt="" loading="lazy" /> : null}
+  </div>
+  <div>
+    <h3>{name}</h3>
+    <p>{description || "暂无简介"}</p>
+  </div>
+  <div class="count">
+    {count}
+    <small>{countLabel}</small>
+  </div>
+</a>

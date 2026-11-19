@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2119"/>
+      <stop offset="0.55" stop-color="#8a4b1f"/>
+      <stop offset="1" stop-color="#f4efe4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#sky)"/>
+  <circle cx="880" cy="240" r="86" fill="#f7d9a8" opacity="0.9"/>
+  <path d="M0 470 L240 380 L430 450 L640 350 L860 440 L1060 380 L1200 440 L1200 630 L0 630 Z" fill="#241d16" opacity="0.85"/>
+  <text x="72" y="150" fill="#f4efe4" font-family="Georgia, serif" font-size="46" letter-spacing="10">TWILIGHTLOG</text>
+  <text x="72" y="230" fill="#f4efe4" font-family="Georgia, serif" font-size="70" font-style="italic">记录黄昏之后的光</text>
+  <text x="74" y="300" fill="#f7e6c8" font-family="system-ui, sans-serif" font-size="26" letter-spacing="4">ARTICLES · PHOTOGRAPHY</text>
+</svg>

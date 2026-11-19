@@ -1,66 +1,143 @@
 ---
-const title = "TwilightLog";
-const description = "TwilightLog 公开站占位页";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ArticleCard from "../components/ArticleCard.astro";
+import AlbumCard from "../components/AlbumCard.astro";
+import {
+  getLatestAlbums,
+  getLatestArticles,
+  getRecommendations,
+} from "../lib/api";
+
+const ARTICLE_TARGET = 3;
+const ALBUM_TARGET = 3;
+
+const [recommendations, latestArticles, latestAlbums] = await Promise.all([
+  getRecommendations(10),
+  getLatestArticles(ARTICLE_TARGET + 3),
+  getLatestAlbums(ALBUM_TARGET + 3),
+]);
+
+const articles = recommendations
+  .filter((item) => item.type === "article" && item.article)
+  .map((item) => item.article!)
+  .filter((article, index, list) => list.findIndex((entry) => entry.id === article.id) === index)
+  .slice(0, ARTICLE_TARGET);
+
+const albums = recommendations
+  .filter((item) => item.type === "album" && item.album)
+  .map((item) => item.album!)
+  .filter((album, index, list) => list.findIndex((entry) => entry.id === album.id) === index)
+  .slice(0, ALBUM_TARGET);
+
+for (const article of latestArticles) {
+  if (articles.length >= ARTICLE_TARGET) break;
+  if (!articles.some((entry) => entry.id === article.id)) articles.push(article);
+}
+
+for (const album of latestAlbums) {
+  if (albums.length >= ALBUM_TARGET) break;
+  if (!albums.some((entry) => entry.id === album.id)) albums.push(album);
+}
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "TwilightLog",
+    alternateName: "暮光日志",
+    url: Astro.site?.toString() ?? "https://www.twilightlog.com/",
+    description: "记录黄昏之后的光。文章与摄影的个人站点。",
+    inLanguage: "zh-CN",
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "TwilightLog",
+    url: Astro.site?.toString() ?? "https://www.twilightlog.com/",
+    logo: new URL("/favicon.svg", Astro.site ?? "https://www.twilightlog.com").toString(),
+  },
+];
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={description} />
-    <title>{title}</title>
-  </head>
-  <body>
-    <main>
-      <p class="eyebrow">TWILIGHTLOG / LOCAL</p>
-      <h1>{title}</h1>
-      <p>公开站骨架已就绪。后续在这里接入首页、文章和摄影页面。</p>
-      <p>
-        API 健康检查：<a href="/healthz">/healthz</a> ·
-        <a href="/readyz">/readyz</a>
-      </p>
-    </main>
-  </body>
-</html>
+<BaseLayout
+  title="TwilightLog"
+  description="TwilightLog 暮光日志：记录黄昏之后的光。阅读技术、旅记与生活随想，浏览城市与自然的摄影作品。"
+  jsonLd={jsonLd}
+>
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">暮光日志 · 文章与摄影</p>
+        <h1 class="display">
+          记录黄昏<br />之后的<em>光</em>。
+        </h1>
+        <p class="lede">
+          一些关于技术、旅记与日常的慢思考，一些城市和自然里的光线。写作与摄影在这里并置，留给愿意停留片刻的人。
+        </p>
+      </div>
+      <div class="hero-actions">
+        <a class="entry-card" href="/articles">
+          <span>
+            <strong>文章</strong>
+            <span>技术 · 旅记 · 生活</span>
+          </span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="entry-card" href="/photos">
+          <span>
+            <strong>摄影</strong>
+            <span>街拍 · 风光 · 城市</span>
+          </span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="entry-card" href="/search">
+          <span>
+            <strong>搜索</strong>
+            <span>按标签、日期与类型查找</span>
+          </span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+      <div class="hero-note">
+        <span>更新不追热点，只记录值得留下的部分。</span>
+        <span>照片均经过压缩与元数据清理，原图不公开。</span>
+      </div>
+    </section>
 
-<style>
-  :root {
-    color-scheme: light;
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    background: #f3efe6;
-    color: #171717;
-  }
+    {
+      ARTICLE_TARGET > 0 && articles.length > 0 ? (
+        <section class="section">
+          <div class="section-head">
+            <h2>推荐文章</h2>
+            <a class="meta" href="/articles">
+              全部文章 →
+            </a>
+          </div>
+          <div class="card-grid">
+            {articles.map((article) => (
+              <ArticleCard article={article} reveal />
+            ))}
+          </div>
+        </section>
+      ) : null
+    }
 
-  body {
-    margin: 0;
-  }
-
-  main {
-    max-width: 760px;
-    margin: 12vh auto;
-    padding: 48px 32px;
-    border: 2px solid #171717;
-    box-shadow: 8px 8px 0 #171717;
-    background: #fffdf8;
-  }
-
-  .eyebrow {
-    font-size: 0.75rem;
-    letter-spacing: 0.18em;
-  }
-
-  h1 {
-    margin: 0 0 16px;
-    font-size: clamp(2.5rem, 8vw, 5rem);
-    letter-spacing: -0.05em;
-  }
-
-  p {
-    line-height: 1.8;
-  }
-
-  a {
-    color: #b45309;
-  }
-</style>
+    {
+      ALBUM_TARGET > 0 && albums.length > 0 ? (
+        <section class="section">
+          <div class="section-head">
+            <h2>推荐相册</h2>
+            <a class="meta" href="/photos">
+              全部摄影 →
+            </a>
+          </div>
+          <div class="card-grid">
+            {albums.map((album) => (
+              <AlbumCard album={album} reveal />
+            ))}
+          </div>
+        </section>
+      ) : null
+    }
+  </div>
+</BaseLayout>

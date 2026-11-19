@@ -1,0 +1,56 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ColumnCard from "../../components/ColumnCard.astro";
+import { listPhotoColumns } from "../../lib/api";
+
+const columns = await listPhotoColumns();
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "摄影专栏",
+  description: "TwilightLog 的摄影专栏与相册。",
+  url: new URL("/photos", Astro.site ?? "https://www.twilightlog.com").toString(),
+  inLanguage: "zh-CN",
+};
+---
+
+<BaseLayout
+  title="摄影"
+  description="TwilightLog 的摄影作品：街拍、自然风光与城市夜景，按专栏和相册浏览。"
+  jsonLd={jsonLd}
+>
+  <div class="wrap">
+    <header class="page-head">
+      <p class="eyebrow">Photography</p>
+      <h1 class="display">摄影</h1>
+      <p class="lede">按题材整理的摄影专栏。每个专栏下是一组相册，相册里是保留了比例与拍摄信息的照片。</p>
+      <p style="margin-top:24px">
+        <a class="btn" href="/photos/all">浏览全部照片 →</a>
+      </p>
+    </header>
+
+    <div class="column-list">
+      {
+        columns.items.map((column) => (
+          <ColumnCard
+            href={`/photos/${column.slug}`}
+            name={column.name}
+            description={column.description}
+            cover={column.cover}
+            count={column.albumCount}
+            countLabel="个相册"
+          />
+        ))
+      }
+    </div>
+
+    {
+      columns.items.length === 0 ? (
+        <div class="empty-state">
+          <strong>还没有公开的摄影专栏</strong>
+          <span>相册发布并通过审核后会出现在这里。</span>
+        </div>
+      ) : null
+    }
+  </div>
+</BaseLayout>

@@ -1,0 +1,229 @@
+---
+import "katex/dist/katex.min.css";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import {
+  getArticle,
+  listArticleColumns,
+  listColumnArticles,
+  type ArticleDetail,
+  type ArticleSummary,
+} from "../../../lib/api";
+import { formatDate, imageSource, readingTime } from "../../../lib/format";
+import { renderMarkdown } from "../../../lib/markdown";
+
+export async function getStaticPaths() {
+  const columns = await listArticleColumns();
+  const groups = await Promise.all(
+    columns.items.map(async (column) => ({
+      column,
+      page: await listColumnArticles(column.slug, 50),
+    })),
+  );
+
+  const paths = [];
+  for (const { column, page } of groups) {
+    for (const article of page.items) {
+      const detail = await getArticle(article.slug);
+      if (!detail) continue;
+      paths.push({
+        params: { column: column.slug, slug: article.slug },
+        props: { detail, siblings: page.items },
+      });
+    }
+  }
+  return paths;
+}
+
+interface Props {
+  detail: ArticleDetail;
+  siblings: ArticleSummary[];
+}
+
+const { detail, siblings } = Astro.props as Props;
+const { html, headings } = renderMarkdown(detail.bodyMarkdown);
+const cover = imageSource(detail.cover, "w1440");
+const minutes = readingTime(detail.bodyMarkdown);
+
+const index = siblings.findIndex((entry) => entry.id === detail.id);
+const newer = index > 0 ? siblings[index - 1] : null;
+const older = index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null;
+
+const canonical = `/articles/${detail.column.slug}/${detail.slug}`;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: detail.title,
+  description: detail.summary,
+  datePublished: detail.publishedAt,
+  dateModified: detail.publishedAt,
+  url: new URL(canonical, Astro.site ?? "https://www.twilightlog.com").toString(),
+  mainEntityOfPage: new URL(canonical, Astro.site ?? "https://www.twilightlog.com").toString(),
+  image: cover?.src,
+  inLanguage: "zh-CN",
+  author: { "@type": "Organization", name: "TwilightLog" },
+  publisher: {
+    "@type": "Organization",
+    name: "TwilightLog",
+    logo: {
+      "@type": "ImageObject",
+      url: new URL("/favicon.svg", Astro.site ?? "https://www.twilightlog.com").toString(),
+    },
+  },
+};
+---
+
+<BaseLayout
+  title={detail.title}
+  description={detail.summary}
+  canonical={canonical}
+  ogType="article"
+  image={cover?.src}
+  jsonLd={jsonLd}
+>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a>
+      <span aria-hidden="true">/</span>
+      <a href="/articles">文章</a>
+      <span aria-hidden="true">/</span>
+      <a href={`/articles/${detail.column.slug}`}>{detail.column.name}</a>
+      <span aria-hidden="true">/</span>
+      <span>{detail.title}</span>
+    </nav>
+
+    <header class="article-hero">
+      <p class="eyebrow">{detail.column.name}</p>
+      <h1 class="display">{detail.title}</h1>
+      <p class="lede">{detail.summary}</p>
+      <div class="article-meta">
+        <time datetime={detail.publishedAt}>{formatDate(detail.publishedAt)}</time>
+        <span aria-hidden="true">·</span>
+        <span>{minutes}</span>
+        {
+          detail.tags.length ? (
+            <>
+              <span aria-hidden="true">·</span>
+              <div class="tag-row">
+                {detail.tags.map((tag: string) => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </div>
+            </>
+          ) : null
+        }
+      </div>
+    </header>
+
+    {
+      cover ? (
+        <figure class="article-cover">
+          <img
+            src={cover.src}
+            srcset={cover.srcset}
+            sizes="(max-width: 1180px) 100vw, 1180px"
+            width={cover.width}
+            height={cover.height}
+            alt=""
+            decoding="async"
+          />
+        </figure>
+      ) : null
+    }
+
+    <div class="article-layout">
+      <article class="prose" data-article-body set:html={html} />
+
+      {
+        headings.length > 1 ? (
+          <aside class="toc" aria-label="文章目录">
+            <h2>目录</h2>
+            <ol>
+              {headings.map((heading) => (
+                <li class:list={[`depth-${heading.depth}`]}>
+                  <a href={`#${heading.id}`}>{heading.text}</a>
+                </li>
+              ))}
+            </ol>
+          </aside>
+        ) : null
+      }
+    </div>
+
+    <div class="article-footer">
+      <a class="btn ghost" href={`/articles/${detail.column.slug}`}>
+        ← 返回 {detail.column.name}
+      </a>
+      <span class="meta">最后更新于 {formatDate(detail.publishedAt)}</span>
+    </div>
+
+    <nav class="article-nav" aria-label="上下篇">
+      {
+        newer ? (
+          <a href={`/articles/${newer.column.slug}/${newer.slug}`}>
+            <span>较新一篇</span>
+            {newer.title}
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        older ? (
+          <a href={`/articles/${older.column.slug}/${older.slug}`}>
+            <span>较早一篇</span>
+            {older.title}
+          </a>
+        ) : (
+          <span />
+        )
+      }
+    </nav>
+  </div>
+</BaseLayout>
+
+<script>
+  const copyButtons = document.querySelectorAll<HTMLButtonElement>("[data-copy]");
+  copyButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      const block = button.closest(".code-block");
+      const code = block?.querySelector("pre code")?.textContent ?? "";
+      try {
+        await navigator.clipboard.writeText(code);
+        button.textContent = "已复制";
+      } catch {
+        button.textContent = "复制失败";
+      }
+      window.setTimeout(() => {
+        button.textContent = "复制";
+      }, 1600);
+    });
+  });
+
+  const blocks = Array.from(
+    document.querySelectorAll<HTMLElement>(".mermaid-block[data-mermaid]"),
+  );
+  if (blocks.length > 0) {
+    void (async () => {
+      const { default: mermaid } = await import("mermaid");
+      const dark = document.documentElement.dataset.theme === "dark";
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: "strict",
+        theme: dark ? "dark" : "neutral",
+      });
+      blocks.forEach(async (block, index) => {
+        const source = block.querySelector("code")?.textContent ?? "";
+        try {
+          const { svg } = await mermaid.render(`mermaid-diagram-${index}`, source);
+          block.innerHTML = svg;
+        } catch {
+          block.classList.add("is-failed");
+          const fallback = block.querySelector(".mermaid-fallback");
+          if (fallback) {
+            fallback.textContent = "图示渲染失败，已保留源码。";
+          }
+        }
+      });
+    })();
+  }
+</script>
