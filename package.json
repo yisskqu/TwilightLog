@@ -1,0 +1,12 @@
+{
+  "name": "twilightlog",
+  "private": true,
+  "packageManager": "pnpm@11.14.0",
+  "scripts": {
+    "dev:web": "pnpm --filter @twilightlog/web dev",
+    "dev:admin": "pnpm --filter @twilightlog/admin dev",
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm -r build",
+    "generate:api": "pnpm --filter @twilightlog/api-client generate"
+  }
+}

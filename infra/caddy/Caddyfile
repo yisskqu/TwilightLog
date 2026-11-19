@@ -1,0 +1,17 @@
+{
+	admin off
+	auto_https off
+}
+
+:8080 {
+	encode gzip
+
+	route {
+		reverse_proxy /api/* api:8080
+		reverse_proxy /healthz api:8080
+		reverse_proxy /readyz api:8080
+
+		root * /srv
+		file_server
+	}
+}

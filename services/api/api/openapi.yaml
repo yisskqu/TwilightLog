@@ -1,0 +1,120 @@
+openapi: 3.1.0
+info:
+  title: TwilightLog API
+  version: 0.1.0
+  description: TwilightLog 公开站与管理后台共用的 API 契约。
+servers:
+  - url: http://localhost:8080
+    description: 本地 Caddy 入口
+tags:
+  - name: system
+  - name: capabilities
+paths:
+  /healthz:
+    get:
+      tags: [system]
+      summary: 进程存活检查
+      operationId: getHealthz
+      responses:
+        "200":
+          description: 进程存活
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+  /readyz:
+    get:
+      tags: [system]
+      summary: 依赖就绪检查
+      operationId: getReadyz
+      responses:
+        "200":
+          description: 数据库可用
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+        "503":
+          description: 数据库不可用
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/capabilities:
+    get:
+      tags: [capabilities]
+      summary: 获取启用模块、菜单与权限
+      operationId: getCapabilities
+      responses:
+        "200":
+          description: 当前启用的能力
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Capabilities"
+        "500":
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: 页码，从 1 开始
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      description: 每页数量，默认 12
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 12
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+    Error:
+      type: object
+      required: [code, message, details, requestId]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          description: 可选的结构化错误详情
+        requestId:
+          type: string
+    Capabilities:
+      type: object
+      required: [modules, menus, permissions]
+      properties:
+        modules:
+          type: array
+          items:
+            type: string
+        menus:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: array
+          items:
+            type: string
