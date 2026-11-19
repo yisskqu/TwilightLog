@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TwilightLog · 本地占位页</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: #f3efe6;
+        color: #171717;
+      }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+      }
+      main {
+        max-width: 640px;
+        padding: 48px 32px;
+        border: 2px solid #171717;
+        box-shadow: 8px 8px 0 #171717;
+        background: #fffdf8;
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 6vw, 4rem);
+        letter-spacing: -0.04em;
+      }
+      p {
+        margin: 8px 0;
+        line-height: 1.7;
+      }
+      code {
+        background: #eae4d8;
+        padding: 2px 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>TwilightLog</h1>
+      <p>本地 Caddy 占位页已启动。</p>
+      <p>API 健康检查：<code>/healthz</code>、<code>/readyz</code></p>
+      <p>API 能力接口：<code>/api/v1/capabilities</code></p>
+    </main>
+  </body>
+</html>
