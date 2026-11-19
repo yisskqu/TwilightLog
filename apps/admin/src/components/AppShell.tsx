@@ -37,9 +37,15 @@ export function AppShell({ children }: { children: ReactNode }) {
               </NavLink>
               <NavLink to="/admin/users">账号管理</NavLink>
               <NavLink to="/admin/audit">审计日志</NavLink>
+              <NavLink to="/admin/media">媒体测试</NavLink>
             </>
           ) : (
-            <NavLink to="/editor">编辑工作区</NavLink>
+            <>
+              <NavLink to="/editor" end>
+                编辑工作区
+              </NavLink>
+              <NavLink to="/editor/media">媒体测试</NavLink>
+            </>
           )}
         </nav>
 

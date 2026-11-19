@@ -7,6 +7,7 @@ import { AuditPage } from "./pages/AuditPage";
 import { EditorHome } from "./pages/EditorHome";
 import { ForbiddenPage } from "./pages/ForbiddenPage";
 import { LoginPage } from "./pages/LoginPage";
+import { MediaTestPage } from "./pages/MediaTestPage";
 import { UsersPage } from "./pages/UsersPage";
 
 function ProtectedLayout({ roles }: { roles: Role[] }) {
@@ -64,9 +65,11 @@ export default function App() {
             <Route index element={<AdminHome />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="audit" element={<AuditPage />} />
+            <Route path="media" element={<MediaTestPage />} />
           </Route>
           <Route path="/editor" element={<ProtectedLayout roles={["editor"]} />}>
             <Route index element={<EditorHome />} />
+            <Route path="media" element={<MediaTestPage />} />
           </Route>
           <Route path="/" element={<HomeRedirect />} />
           <Route path="*" element={<Navigate to="/" replace />} />
