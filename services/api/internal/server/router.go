@@ -13,6 +13,7 @@ import (
 	"github.com/yisskqu/TwilightLog/services/api/internal/accounts"
 	"github.com/yisskqu/TwilightLog/services/api/internal/audit"
 	"github.com/yisskqu/TwilightLog/services/api/internal/auth"
+	"github.com/yisskqu/TwilightLog/services/api/internal/content"
 	"github.com/yisskqu/TwilightLog/services/api/internal/media"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/httpx"
 )
@@ -23,6 +24,7 @@ type Deps struct {
 	Accounts *accounts.Service
 	Audit    *audit.Service
 	Media    *media.Service
+	Content  *content.Service
 }
 
 type sessionResponse struct {
@@ -34,6 +36,21 @@ type sessionResponse struct {
 // Register mounts authentication, account management and audit routes under /api/v1.
 func Register(deps Deps) func(chi.Router) {
 	return func(r chi.Router) {
+		r.Route("/home", func(r chi.Router) {
+			r.Get("/recommendations", recommendationsHandler(deps.Content, deps.Media))
+		})
+		r.Get("/article-columns", listArticleColumnsHandler(deps.Content, deps.Media))
+		r.Get("/article-columns/{slug}/articles", listColumnArticlesHandler(deps.Content, deps.Media))
+		r.Get("/articles/{slug}", getArticleHandler(deps.Content, deps.Media))
+		r.Get("/photo-columns", listPhotoColumnsHandler(deps.Content, deps.Media))
+		r.Get("/photo-columns/{slug}/albums", listColumnAlbumsHandler(deps.Content, deps.Media))
+		r.Get("/albums/{slug}", getAlbumHandler(deps.Content, deps.Media))
+		r.Get("/albums/{slug}/photos", listAlbumPhotosHandler(deps.Content, deps.Media))
+		r.Get("/photos", listPhotosHandler(deps.Content, deps.Media))
+		r.Get("/photos/{id}", getPhotoHandler(deps.Content, deps.Media))
+		r.Get("/search", searchHandler(deps.Content, deps.Media))
+		r.Get("/tags", listTagsHandler(deps.Content))
+
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/login", loginHandler(deps.Auth))
 			r.Post("/refresh", refreshHandler(deps.Auth))

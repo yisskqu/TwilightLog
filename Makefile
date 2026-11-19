@@ -26,6 +26,9 @@ migrate-down:
 migrate-status:
 	cd $(SERVICE_DIR) && go run ./cmd/migrate status
 
+seed:
+	cd $(SERVICE_DIR) && go run ./cmd/seed
+
 compose-up:
 	docker compose -f infra/compose/docker-compose.dev.yml --env-file .env up -d --build
 

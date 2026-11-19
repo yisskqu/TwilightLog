@@ -13,6 +13,7 @@ tags:
   - name: account
   - name: audit
   - name: media
+  - name: content
 paths:
   /healthz:
     get:
@@ -670,6 +671,338 @@ paths:
                 format: binary
         "404":
           description: 文件不存在
+  /api/v1/home/recommendations:
+    get:
+      tags: [content]
+      summary: 首页推荐内容
+      operationId: getRecommendations
+      parameters:
+        - name: limit
+          in: query
+          description: 返回数量，默认 6
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+            default: 6
+      responses:
+        "200":
+          description: 已发布且可见的推荐文章与相册
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeRecommendations"
+        "304":
+          description: 内容未修改
+  /api/v1/article-columns:
+    get:
+      tags: [content]
+      summary: 文章专栏列表
+      operationId: listArticleColumns
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Tags"
+        - $ref: "#/components/parameters/DateFrom"
+        - $ref: "#/components/parameters/DateTo"
+        - $ref: "#/components/parameters/Sort"
+      responses:
+        "200":
+          description: 文章专栏分页
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleColumnPage"
+        "304":
+          description: 内容未修改
+  /api/v1/article-columns/{slug}/articles:
+    get:
+      tags: [content]
+      summary: 专栏内文章列表
+      operationId: listColumnArticles
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Tags"
+        - $ref: "#/components/parameters/DateFrom"
+        - $ref: "#/components/parameters/DateTo"
+        - $ref: "#/components/parameters/Sort"
+      responses:
+        "200":
+          description: 文章分页
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ColumnArticles"
+        "304":
+          description: 内容未修改
+        "404":
+          description: 专栏不存在或未公开
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/articles/{slug}:
+    get:
+      tags: [content]
+      summary: 文章详情
+      operationId: getArticle
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 已发布文章详情
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleDetail"
+        "304":
+          description: 内容未修改
+        "404":
+          description: 文章不存在或未公开
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/photo-columns:
+    get:
+      tags: [content]
+      summary: 摄影专栏列表
+      operationId: listPhotoColumns
+      parameters:
+        - name: theme
+          in: query
+          description: 摄影题材
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Tags"
+        - $ref: "#/components/parameters/DateFrom"
+        - $ref: "#/components/parameters/DateTo"
+        - $ref: "#/components/parameters/Sort"
+      responses:
+        "200":
+          description: 摄影专栏分页
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhotoColumnPage"
+        "304":
+          description: 内容未修改
+  /api/v1/photo-columns/{slug}/albums:
+    get:
+      tags: [content]
+      summary: 专栏内相册列表
+      operationId: listColumnAlbums
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Tags"
+        - $ref: "#/components/parameters/DateFrom"
+        - $ref: "#/components/parameters/DateTo"
+        - $ref: "#/components/parameters/Sort"
+      responses:
+        "200":
+          description: 相册分页
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ColumnAlbums"
+        "304":
+          description: 内容未修改
+        "404":
+          description: 专栏不存在或未公开
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/albums/{slug}:
+    get:
+      tags: [content]
+      summary: 相册详情
+      operationId: getAlbum
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 已发布相册
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Album"
+        "304":
+          description: 内容未修改
+        "404":
+          description: 相册不存在、未公开或没有公开照片
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/albums/{slug}/photos:
+    get:
+      tags: [content]
+      summary: 相册内照片列表
+      operationId: listAlbumPhotos
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Tags"
+        - $ref: "#/components/parameters/DateFrom"
+        - $ref: "#/components/parameters/DateTo"
+        - $ref: "#/components/parameters/Sort"
+      responses:
+        "200":
+          description: 照片分页
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhotoPage"
+        "304":
+          description: 内容未修改
+  /api/v1/photos:
+    get:
+      tags: [content]
+      summary: 照片列表
+      operationId: listPhotos
+      parameters:
+        - name: album
+          in: query
+          description: 相册 slug
+          schema:
+            type: string
+        - name: column
+          in: query
+          description: 摄影专栏 slug
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Tags"
+        - $ref: "#/components/parameters/DateFrom"
+        - $ref: "#/components/parameters/DateTo"
+        - $ref: "#/components/parameters/Sort"
+      responses:
+        "200":
+          description: 照片分页
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhotoPage"
+        "304":
+          description: 内容未修改
+  /api/v1/photos/{id}:
+    get:
+      tags: [content]
+      summary: 照片详情
+      operationId: getPhoto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 已发布照片与元数据
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhotoDetail"
+        "304":
+          description: 内容未修改
+        "404":
+          description: 照片不存在或未公开
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/search:
+    get:
+      tags: [content]
+      summary: 全站搜索
+      operationId: searchContent
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: 关键词，匹配标题、摘要、正文索引与标签
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: 逗号分隔的内容类型，例如 article,album；留空表示全部
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Sort"
+      responses:
+        "200":
+          description: 搜索结果
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchPage"
+        "304":
+          description: 内容未修改
+        "400":
+          description: 关键词为空或参数不合法
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/tags:
+    get:
+      tags: [content]
+      summary: 公开标签词库
+      operationId: listTags
+      parameters:
+        - name: scope
+          in: query
+          schema:
+            type: string
+            enum: [article, photo]
+            default: article
+      responses:
+        "200":
+          description: 标签列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagList"
+        "304":
+          description: 内容未修改
 components:
   securitySchemes:
     bearerAuth:
@@ -714,6 +1047,40 @@ components:
       schema:
         type: string
         format: uuid
+    Search:
+      name: q
+      in: query
+      description: 关键词，匹配标题、摘要、正文索引与标签
+      schema:
+        type: string
+    Tags:
+      name: tags
+      in: query
+      description: 逗号分隔的标签名，内容必须同时含有全部标签
+      schema:
+        type: string
+    DateFrom:
+      name: dateFrom
+      in: query
+      description: 起始日期（含当天），格式 YYYY-MM-DD
+      schema:
+        type: string
+        format: date
+    DateTo:
+      name: dateTo
+      in: query
+      description: 结束日期（含当天），格式 YYYY-MM-DD
+      schema:
+        type: string
+        format: date
+    Sort:
+      name: sort
+      in: query
+      description: 时间排序
+      schema:
+        type: string
+        enum: [latest, oldest]
+        default: latest
   schemas:
     Health:
       type: object
@@ -1091,3 +1458,390 @@ components:
           type: string
         expiresIn:
           type: string
+    AssetVariant:
+      type: object
+      required: [name, url, width, height, size]
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        width:
+          type: integer
+        height:
+          type: integer
+        size:
+          type: integer
+    Asset:
+      type: object
+      required: [mediaId, key, width, height, blurhash, variants]
+      properties:
+        mediaId:
+          type: string
+          format: uuid
+        key:
+          type: string
+          description: 前端 assetUrl(key, variant) 使用的衍生图前缀
+        width:
+          type: integer
+        height:
+          type: integer
+        blurhash:
+          type: string
+        variants:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetVariant"
+    ColumnRef:
+      type: object
+      required: [slug, name]
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+    ArticleColumn:
+      type: object
+      required: [id, slug, name, description, cover, tags, articleCount, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        cover:
+          $ref: "#/components/schemas/Asset"
+        tags:
+          type: array
+          items:
+            type: string
+        articleCount:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+    ArticleSummary:
+      type: object
+      required: [id, slug, title, summary, column, cover, tags, publishedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        column:
+          $ref: "#/components/schemas/ColumnRef"
+        cover:
+          $ref: "#/components/schemas/Asset"
+        tags:
+          type: array
+          items:
+            type: string
+        publishedAt:
+          type: string
+          format: date-time
+    ArticleDetail:
+      allOf:
+        - $ref: "#/components/schemas/ArticleSummary"
+        - type: object
+          required: [bodyMarkdown]
+          properties:
+            bodyMarkdown:
+              type: string
+    PhotoColumn:
+      type: object
+      required: [id, slug, name, description, theme, cover, tags, albumCount, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        theme:
+          type: string
+        cover:
+          $ref: "#/components/schemas/Asset"
+        tags:
+          type: array
+          items:
+            type: string
+        albumCount:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+    Album:
+      type: object
+      required: [id, slug, title, description, location, shotAt, column, cover, tags, photoCount, publishedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        shotAt:
+          type: string
+        column:
+          $ref: "#/components/schemas/ColumnRef"
+        cover:
+          $ref: "#/components/schemas/Asset"
+        tags:
+          type: array
+          items:
+            type: string
+        photoCount:
+          type: integer
+        latestPhotoAt:
+          type: string
+          format: date-time
+          nullable: true
+        publishedAt:
+          type: string
+          format: date-time
+    PhotoSummary:
+      type: object
+      required: [id, title, description, location, takenAt, album, column, tags, media, publishedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        takenAt:
+          type: string
+        album:
+          $ref: "#/components/schemas/ColumnRef"
+        column:
+          $ref: "#/components/schemas/ColumnRef"
+        tags:
+          type: array
+          items:
+            type: string
+        media:
+          $ref: "#/components/schemas/Asset"
+        publishedAt:
+          type: string
+          format: date-time
+    PhotoDetail:
+      allOf:
+        - $ref: "#/components/schemas/PhotoSummary"
+        - type: object
+          required: [exif]
+          properties:
+            exif:
+              $ref: "#/components/schemas/MediaExif"
+    SearchHit:
+      type: object
+      required: [type, id, slug, title, summary, cover, publishedAt, column, album]
+      properties:
+        type:
+          type: string
+          enum: [article_column, article, photo_column, album, photo]
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        cover:
+          $ref: "#/components/schemas/Asset"
+        publishedAt:
+          type: string
+          format: date-time
+        column:
+          $ref: "#/components/schemas/ColumnRef"
+        album:
+          $ref: "#/components/schemas/ColumnRef"
+    Tag:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+    TagList:
+      type: object
+      required: [scope, items]
+      properties:
+        scope:
+          type: string
+          enum: [article, photo]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+    Recommendation:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [article, album]
+        article:
+          $ref: "#/components/schemas/ArticleSummary"
+        album:
+          $ref: "#/components/schemas/Album"
+    HomeRecommendations:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Recommendation"
+    ArticleColumnPage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ArticleColumn"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+    ArticlePage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ArticleSummary"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+    ColumnArticles:
+      type: object
+      required: [column, items, page, pageSize, total, totalPages]
+      properties:
+        column:
+          $ref: "#/components/schemas/ColumnRef"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ArticleSummary"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+    PhotoColumnPage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PhotoColumn"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+    AlbumPage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Album"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+    ColumnAlbums:
+      type: object
+      required: [column, items, page, pageSize, total, totalPages]
+      properties:
+        column:
+          $ref: "#/components/schemas/ColumnRef"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Album"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+    PhotoPage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PhotoSummary"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+    SearchPage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchHit"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer

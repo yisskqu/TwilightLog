@@ -413,6 +413,210 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/home/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 首页推荐内容 */
+        get: operations["getRecommendations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/article-columns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 文章专栏列表 */
+        get: operations["listArticleColumns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/article-columns/{slug}/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 专栏内文章列表 */
+        get: operations["listColumnArticles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/articles/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 文章详情 */
+        get: operations["getArticle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photo-columns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 摄影专栏列表 */
+        get: operations["listPhotoColumns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photo-columns/{slug}/albums": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 专栏内相册列表 */
+        get: operations["listColumnAlbums"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/albums/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 相册详情 */
+        get: operations["getAlbum"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/albums/{slug}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 相册内照片列表 */
+        get: operations["listAlbumPhotos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 照片列表 */
+        get: operations["listPhotos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 照片详情 */
+        get: operations["getPhoto"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 全站搜索 */
+        get: operations["searchContent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 公开标签词库 */
+        get: operations["listTags"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -627,6 +831,190 @@ export interface components {
             url: string;
             expiresIn: string;
         };
+        AssetVariant: {
+            name: string;
+            url: string;
+            width: number;
+            height: number;
+            size: number;
+        };
+        Asset: {
+            /** Format: uuid */
+            mediaId: string;
+            /** @description 前端 assetUrl(key, variant) 使用的衍生图前缀 */
+            key: string;
+            width: number;
+            height: number;
+            blurhash: string;
+            variants: components["schemas"]["AssetVariant"][];
+        };
+        ColumnRef: {
+            slug: string;
+            name: string;
+        };
+        ArticleColumn: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            description: string;
+            cover: components["schemas"]["Asset"];
+            tags: string[];
+            articleCount: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ArticleSummary: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+            summary: string;
+            column: components["schemas"]["ColumnRef"];
+            cover: components["schemas"]["Asset"];
+            tags: string[];
+            /** Format: date-time */
+            publishedAt: string;
+        };
+        ArticleDetail: components["schemas"]["ArticleSummary"] & {
+            bodyMarkdown: string;
+        };
+        PhotoColumn: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            description: string;
+            theme: string;
+            cover: components["schemas"]["Asset"];
+            tags: string[];
+            albumCount: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        Album: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            location: string;
+            shotAt: string;
+            column: components["schemas"]["ColumnRef"];
+            cover: components["schemas"]["Asset"];
+            tags: string[];
+            photoCount: number;
+            /** Format: date-time */
+            latestPhotoAt?: string | null;
+            /** Format: date-time */
+            publishedAt: string;
+        };
+        PhotoSummary: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            description: string;
+            location: string;
+            takenAt: string;
+            album: components["schemas"]["ColumnRef"];
+            column: components["schemas"]["ColumnRef"];
+            tags: string[];
+            media: components["schemas"]["Asset"];
+            /** Format: date-time */
+            publishedAt: string;
+        };
+        PhotoDetail: components["schemas"]["PhotoSummary"] & {
+            exif: components["schemas"]["MediaExif"];
+        };
+        SearchHit: {
+            /** @enum {string} */
+            type: "article_column" | "article" | "photo_column" | "album" | "photo";
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+            summary: string;
+            cover: components["schemas"]["Asset"];
+            /** Format: date-time */
+            publishedAt: string;
+            column: components["schemas"]["ColumnRef"];
+            album: components["schemas"]["ColumnRef"];
+        };
+        Tag: {
+            name: string;
+        };
+        TagList: {
+            /** @enum {string} */
+            scope: "article" | "photo";
+            items: components["schemas"]["Tag"][];
+        };
+        Recommendation: {
+            /** @enum {string} */
+            type: "article" | "album";
+            article?: components["schemas"]["ArticleSummary"];
+            album?: components["schemas"]["Album"];
+        };
+        HomeRecommendations: {
+            items: components["schemas"]["Recommendation"][];
+        };
+        ArticleColumnPage: {
+            items: components["schemas"]["ArticleColumn"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
+        ArticlePage: {
+            items: components["schemas"]["ArticleSummary"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
+        ColumnArticles: {
+            column: components["schemas"]["ColumnRef"];
+            items: components["schemas"]["ArticleSummary"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
+        PhotoColumnPage: {
+            items: components["schemas"]["PhotoColumn"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
+        AlbumPage: {
+            items: components["schemas"]["Album"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
+        ColumnAlbums: {
+            column: components["schemas"]["ColumnRef"];
+            items: components["schemas"]["Album"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
+        PhotoPage: {
+            items: components["schemas"]["PhotoSummary"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
+        SearchPage: {
+            items: components["schemas"]["SearchHit"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
     };
     responses: never;
     parameters: {
@@ -638,6 +1026,16 @@ export interface components {
         PageSize: number;
         /** @description 媒体 ID */
         MediaId: string;
+        /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+        Search: string;
+        /** @description 逗号分隔的标签名，内容必须同时含有全部标签 */
+        Tags: string;
+        /** @description 起始日期（含当天），格式 YYYY-MM-DD */
+        DateFrom: string;
+        /** @description 结束日期（含当天），格式 YYYY-MM-DD */
+        DateTo: string;
+        /** @description 时间排序 */
+        Sort: "latest" | "oldest";
     };
     requestBodies: never;
     headers: never;
@@ -1519,6 +1917,508 @@ export interface operations {
             };
             /** @description 文件不存在 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getRecommendations: {
+        parameters: {
+            query?: {
+                /** @description 返回数量，默认 6 */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已发布且可见的推荐文章与相册 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomeRecommendations"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listArticleColumns: {
+        parameters: {
+            query?: {
+                /** @description 页码，从 1 开始 */
+                page?: components["parameters"]["Page"];
+                /** @description 每页数量，默认 12 */
+                pageSize?: components["parameters"]["PageSize"];
+                /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+                q?: components["parameters"]["Search"];
+                /** @description 逗号分隔的标签名，内容必须同时含有全部标签 */
+                tags?: components["parameters"]["Tags"];
+                /** @description 起始日期（含当天），格式 YYYY-MM-DD */
+                dateFrom?: components["parameters"]["DateFrom"];
+                /** @description 结束日期（含当天），格式 YYYY-MM-DD */
+                dateTo?: components["parameters"]["DateTo"];
+                /** @description 时间排序 */
+                sort?: components["parameters"]["Sort"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 文章专栏分页 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleColumnPage"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listColumnArticles: {
+        parameters: {
+            query?: {
+                /** @description 页码，从 1 开始 */
+                page?: components["parameters"]["Page"];
+                /** @description 每页数量，默认 12 */
+                pageSize?: components["parameters"]["PageSize"];
+                /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+                q?: components["parameters"]["Search"];
+                /** @description 逗号分隔的标签名，内容必须同时含有全部标签 */
+                tags?: components["parameters"]["Tags"];
+                /** @description 起始日期（含当天），格式 YYYY-MM-DD */
+                dateFrom?: components["parameters"]["DateFrom"];
+                /** @description 结束日期（含当天），格式 YYYY-MM-DD */
+                dateTo?: components["parameters"]["DateTo"];
+                /** @description 时间排序 */
+                sort?: components["parameters"]["Sort"];
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 文章分页 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ColumnArticles"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 专栏不存在或未公开 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getArticle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已发布文章详情 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDetail"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 文章不存在或未公开 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listPhotoColumns: {
+        parameters: {
+            query?: {
+                /** @description 摄影题材 */
+                theme?: string;
+                /** @description 页码，从 1 开始 */
+                page?: components["parameters"]["Page"];
+                /** @description 每页数量，默认 12 */
+                pageSize?: components["parameters"]["PageSize"];
+                /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+                q?: components["parameters"]["Search"];
+                /** @description 逗号分隔的标签名，内容必须同时含有全部标签 */
+                tags?: components["parameters"]["Tags"];
+                /** @description 起始日期（含当天），格式 YYYY-MM-DD */
+                dateFrom?: components["parameters"]["DateFrom"];
+                /** @description 结束日期（含当天），格式 YYYY-MM-DD */
+                dateTo?: components["parameters"]["DateTo"];
+                /** @description 时间排序 */
+                sort?: components["parameters"]["Sort"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 摄影专栏分页 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoColumnPage"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listColumnAlbums: {
+        parameters: {
+            query?: {
+                /** @description 页码，从 1 开始 */
+                page?: components["parameters"]["Page"];
+                /** @description 每页数量，默认 12 */
+                pageSize?: components["parameters"]["PageSize"];
+                /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+                q?: components["parameters"]["Search"];
+                /** @description 逗号分隔的标签名，内容必须同时含有全部标签 */
+                tags?: components["parameters"]["Tags"];
+                /** @description 起始日期（含当天），格式 YYYY-MM-DD */
+                dateFrom?: components["parameters"]["DateFrom"];
+                /** @description 结束日期（含当天），格式 YYYY-MM-DD */
+                dateTo?: components["parameters"]["DateTo"];
+                /** @description 时间排序 */
+                sort?: components["parameters"]["Sort"];
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 相册分页 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ColumnAlbums"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 专栏不存在或未公开 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getAlbum: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已发布相册 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Album"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 相册不存在、未公开或没有公开照片 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listAlbumPhotos: {
+        parameters: {
+            query?: {
+                /** @description 页码，从 1 开始 */
+                page?: components["parameters"]["Page"];
+                /** @description 每页数量，默认 12 */
+                pageSize?: components["parameters"]["PageSize"];
+                /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+                q?: components["parameters"]["Search"];
+                /** @description 逗号分隔的标签名，内容必须同时含有全部标签 */
+                tags?: components["parameters"]["Tags"];
+                /** @description 起始日期（含当天），格式 YYYY-MM-DD */
+                dateFrom?: components["parameters"]["DateFrom"];
+                /** @description 结束日期（含当天），格式 YYYY-MM-DD */
+                dateTo?: components["parameters"]["DateTo"];
+                /** @description 时间排序 */
+                sort?: components["parameters"]["Sort"];
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 照片分页 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoPage"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listPhotos: {
+        parameters: {
+            query?: {
+                /** @description 相册 slug */
+                album?: string;
+                /** @description 摄影专栏 slug */
+                column?: string;
+                /** @description 页码，从 1 开始 */
+                page?: components["parameters"]["Page"];
+                /** @description 每页数量，默认 12 */
+                pageSize?: components["parameters"]["PageSize"];
+                /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+                q?: components["parameters"]["Search"];
+                /** @description 逗号分隔的标签名，内容必须同时含有全部标签 */
+                tags?: components["parameters"]["Tags"];
+                /** @description 起始日期（含当天），格式 YYYY-MM-DD */
+                dateFrom?: components["parameters"]["DateFrom"];
+                /** @description 结束日期（含当天），格式 YYYY-MM-DD */
+                dateTo?: components["parameters"]["DateTo"];
+                /** @description 时间排序 */
+                sort?: components["parameters"]["Sort"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 照片分页 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoPage"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已发布照片与元数据 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoDetail"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 照片不存在或未公开 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    searchContent: {
+        parameters: {
+            query: {
+                /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+                q: string;
+                /** @description 逗号分隔的内容类型，例如 article,album；留空表示全部 */
+                type?: string;
+                /** @description 页码，从 1 开始 */
+                page?: components["parameters"]["Page"];
+                /** @description 每页数量，默认 12 */
+                pageSize?: components["parameters"]["PageSize"];
+                /** @description 时间排序 */
+                sort?: components["parameters"]["Sort"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 搜索结果 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchPage"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 关键词为空或参数不合法 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listTags: {
+        parameters: {
+            query?: {
+                scope?: "article" | "photo";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 标签列表 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagList"];
+                };
+            };
+            /** @description 内容未修改 */
+            304: {
                 headers: {
                     [name: string]: unknown;
                 };

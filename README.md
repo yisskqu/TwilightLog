@@ -8,6 +8,7 @@ TwilightLog 是一个以文章与摄影作品为核心的个人图文博客，�
 - 阶段 1：本机 monorepo 骨架已可运行，包含 Go API、PostgreSQL、Caddy、前端占位应用和 CI。
 - 阶段 2：账号、角色、权限、会话与审计已接通；后台提供登录、路由守卫、账号管理和审计页面。
 - 阶段 3：媒体上传与图片管线已接通；支持预签名直传、分片上传、格式校验、EXIF 白名单、方向纠正、BlurHash、WebP 衍生图与水印，原图保持私有。
+- 阶段 4：内容模型与公开只读 API 已接通；包含五类内容的多态版本、标签作用域隔离、筛选/排序/分页、搜索、ETag 与可重复导入的种子数据。
 - 开发顺序、任务拆分和验收标准见 [开发文档](docs/开发文档.md)。
 - 产品规则以 [PRD](docs/article-photography-prd.md) 为准。
 
@@ -107,6 +108,47 @@ go run ./cmd/admin create --username admin --email admin@twilightlog.com --passw
 
 密码也可以放在 `ADMIN_PASSWORD` 环境变量中，避免出现在命令历史里。普通账号和编辑账号由管理员在后台“账号管理”中创建。
 
+### 种子内容
+
+阶段 4 的公开接口需要数据才能浏览。种子命令会创建 3 个文章专栏、10 篇公开文章、3 个摄影专栏、6 个有照片的相册与 30 张照片，并生成真实可访问的 WebP 衍生图；重复执行不会产生重复数据。
+
+```powershell
+cd services/api
+go run ./cmd/seed                 # 默认归属第一个管理员
+go run ./cmd/seed --owner admin   # 指定归属账号
+```
+
+使用 Docker 运行时，API 容器内同样提供该命令：
+
+```powershell
+docker exec twilightlog-api /app/seed --owner admin
+```
+
+种子覆盖空相册、草稿、待审、下线、回收站等场景，公开接口只会返回已审批版本。
+
+### 内容只读接口
+
+公开接口不需要登录，统一返回分页 `{items,page,pageSize,total,totalPages}`，支持 `ETag` / `If-None-Match`。
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/api/v1/home/recommendations` | 首页推荐文章与相册 |
+| GET | `/api/v1/article-columns` | 文章专栏列表 |
+| GET | `/api/v1/article-columns/{slug}/articles` | 专栏内文章列表 |
+| GET | `/api/v1/articles/{slug}` | 文章详情（含 Markdown 源） |
+| GET | `/api/v1/photo-columns` | 摄影专栏列表 |
+| GET | `/api/v1/photo-columns/{slug}/albums` | 专栏内相册列表 |
+| GET | `/api/v1/albums/{slug}` | 相册详情 |
+| GET | `/api/v1/albums/{slug}/photos` | 相册照片列表 |
+| GET | `/api/v1/photos` | 照片列表 |
+| GET | `/api/v1/photos/{id}` | 照片详情与 EXIF 白名单 |
+| GET | `/api/v1/search?q=` | 跨类型搜索 |
+| GET | `/api/v1/tags?scope=article\|photo` | 公开标签词库 |
+
+列表通用参数：`page`、`pageSize`（默认 12，最大 50）、`q`、`tags`（逗号分隔，逻辑 AND）、`dateFrom`、`dateTo`、`sort=latest|oldest`。文章与标签按作用域隔离；未公开、待审、下线、回收站内容以及空相册不会出现在任何公开响应中。
+
+搜索使用 PostgreSQL `pg_trgm` 与去代码块的正文索引；当前标准 PostgreSQL 镜像不含 `pg_jieba`/`zhparser`，后续可在不改接口的前提下替换为中文分词。
+
 ### 认证接口
 
 | 方法 | 路径 | 说明 |
@@ -160,6 +202,13 @@ cd services/api
 go test ./...
 go vet ./...
 staticcheck ./...
+```
+
+内容筛选、分页、标签 AND、搜索与 ETag 的集成测试会读取 `TEST_DATABASE_URL`，未设置时自动跳过。建议使用独立数据库：
+
+```powershell
+$env:TEST_DATABASE_URL="postgres://twilightlog:twilightlog_dev@localhost:5432/twilightlog_test?sslmode=disable"
+go test ./...
 ```
 
 ### 环境变量

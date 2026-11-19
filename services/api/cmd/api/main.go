@@ -13,6 +13,7 @@ import (
 	"github.com/yisskqu/TwilightLog/services/api/internal/accounts"
 	"github.com/yisskqu/TwilightLog/services/api/internal/audit"
 	"github.com/yisskqu/TwilightLog/services/api/internal/auth"
+	"github.com/yisskqu/TwilightLog/services/api/internal/content"
 	"github.com/yisskqu/TwilightLog/services/api/internal/media"
 	"github.com/yisskqu/TwilightLog/services/api/internal/migrations"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/config"
@@ -57,6 +58,7 @@ func main() {
 		os.Exit(1)
 	}
 	accountsService := accounts.NewService(pool, auditService)
+	contentService := content.NewService(content.NewRepository(pool))
 
 	backend, err := storage.NewLocal(cfg.LocalStorageRoot, cfg.AssetBaseURL, cfg.APIBaseURL, cfg.MediaSigningSecret)
 	if err != nil {
@@ -90,6 +92,7 @@ func main() {
 			Accounts: accountsService,
 			Audit:    auditService,
 			Media:    mediaService,
+			Content:  contentService,
 		}),
 	})
 
