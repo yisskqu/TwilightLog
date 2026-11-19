@@ -243,6 +243,176 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/media/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 申请媒体上传地址 */
+        post: operations["presignMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 完成上传并开始处理（幂等） */
+        post: operations["completeMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 查询媒体处理状态 */
+        get: operations["getMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 重试失败的处理 */
+        post: operations["retryMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/{id}/original": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 获取原图短时签名地址 */
+        get: operations["getMediaOriginal"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/upload/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 直传单个文件（能力地址，无需登录） */
+        put: operations["uploadMedia"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/upload/{id}/parts/{part}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 直传一个分片（能力地址，无需登录） */
+        put: operations["uploadMediaPart"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assets/signed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 读取私有原图（签名地址） */
+        get: operations["getSignedAsset"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assets/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 通用预签名上传（能力地址） */
+        put: operations["putSignedAsset"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/assets/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 读取公开衍生图 */
+        get: operations["getPublicAsset"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -360,6 +530,103 @@ export interface components {
             pageSize: number;
             total: number;
         };
+        MediaPresignRequest: {
+            /** @enum {string} */
+            purpose: "article" | "photo";
+            filename: string;
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp" | "image/heic";
+            /**
+             * Format: int64
+             * @description 文件字节数
+             */
+            size: number;
+            /** @description 单次选择的批次标识，同一批次最多 20 张 */
+            batchId: string;
+        };
+        MediaPresignResponse: {
+            /** Format: uuid */
+            mediaId: string;
+            /** @enum {string} */
+            status: "uploading" | "processing" | "ready" | "failed";
+            /** @enum {string} */
+            uploadMode: "single" | "multipart";
+            /** @description uploadMode=single 时的直传地址 */
+            uploadUrl?: string;
+            /** @description uploadMode=multipart 时的分片地址 */
+            partUrls?: string[];
+            /** Format: int64 */
+            partSize?: number;
+            partCount?: number;
+            headers: {
+                [key: string]: string;
+            };
+            /** @description 上传地址有效期（秒） */
+            expiresIn: number;
+        };
+        MediaCompleteRequest: {
+            /** Format: uuid */
+            mediaId: string;
+        };
+        MediaVariant: {
+            /** @enum {string} */
+            name: "w480" | "w960" | "w1440" | "w2048" | "w2560";
+            url: string;
+            width: number;
+            height: number;
+            /** Format: int64 */
+            size: number;
+        };
+        /** @description 仅保留白名单字段，绝不包含 GPS */
+        MediaExif: {
+            cameraMake?: string;
+            cameraModel?: string;
+            lensModel?: string;
+            focalLength?: string;
+            aperture?: string;
+            shutterSpeed?: string;
+            iso?: number;
+            takenAt?: string;
+            timeZone?: string;
+            exposureBias?: string;
+            whiteBalance?: string;
+            orientation?: number;
+            sourceWidth?: number;
+            sourceHeight?: number;
+        };
+        MediaAsset: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            purpose: "article" | "photo";
+            /** @enum {string} */
+            status: "uploading" | "processing" | "ready" | "failed";
+            originalFilename: string;
+            mimeType: string;
+            /** Format: int64 */
+            fileSize: number;
+            width: number;
+            height: number;
+            blurhash: string;
+            exif: components["schemas"]["MediaExif"];
+            variants: components["schemas"]["MediaVariant"][];
+            /** @description 短时签名原图地址，仅 ready 状态返回 */
+            originalUrl?: string;
+            error?: {
+                code?: string;
+                message?: string;
+            };
+            /** Format: date-time */
+            processedAt?: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        SignedURL: {
+            url: string;
+            expiresIn: string;
+        };
     };
     responses: never;
     parameters: {
@@ -369,6 +636,8 @@ export interface components {
         Page: number;
         /** @description 每页数量，默认 12 */
         PageSize: number;
+        /** @description 媒体 ID */
+        MediaId: string;
     };
     requestBodies: never;
     headers: never;
@@ -849,6 +1118,411 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Error"];
                 };
+            };
+        };
+    };
+    presignMedia: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 同一批次重复申请时返回同一媒体记录 */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaPresignRequest"];
+            };
+        };
+        responses: {
+            /** @description 上传地址 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaPresignResponse"];
+                };
+            };
+            /** @description 参数不合法 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 文件超过大小限制 */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 不支持的格式 */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 批次数量超过 20 张 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    completeMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaCompleteRequest"];
+            };
+        };
+        responses: {
+            /** @description 已处理完成或此前已完成 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAsset"];
+                };
+            };
+            /** @description 已进入处理中 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAsset"];
+                };
+            };
+            /** @description 媒体不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 上传未完成或状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 媒体 ID */
+                id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 媒体详情 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAsset"];
+                };
+            };
+            /** @description 媒体不存在或无权访问 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    retryMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 媒体 ID */
+                id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已重新进入处理中 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAsset"];
+                };
+            };
+            /** @description 当前状态不可重试 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getMediaOriginal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 媒体 ID */
+                id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 签名地址 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignedURL"];
+                };
+            };
+            /** @description 媒体不存在或无权访问 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    uploadMedia: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path: {
+                /** @description 媒体 ID */
+                id: components["parameters"]["MediaId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description 上传成功 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 签名无效或过期 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 当前状态不接受上传 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 文件超过大小限制 */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    uploadMediaPart: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path: {
+                /** @description 媒体 ID */
+                id: components["parameters"]["MediaId"];
+                part: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description 分片上传成功 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 签名无效或过期 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 当前状态不接受上传 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getSignedAsset: {
+        parameters: {
+            query: {
+                key: string;
+                expires: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 原图二进制 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description 签名无效或过期 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    putSignedAsset: {
+        parameters: {
+            query: {
+                key: string;
+                expires: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description 上传成功 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 签名无效或过期 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getPublicAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description WebP 衍生图 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
+                };
+            };
+            /** @description 文件不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

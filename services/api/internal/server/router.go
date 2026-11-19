@@ -13,6 +13,7 @@ import (
 	"github.com/yisskqu/TwilightLog/services/api/internal/accounts"
 	"github.com/yisskqu/TwilightLog/services/api/internal/audit"
 	"github.com/yisskqu/TwilightLog/services/api/internal/auth"
+	"github.com/yisskqu/TwilightLog/services/api/internal/media"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/httpx"
 )
 
@@ -21,6 +22,7 @@ type Deps struct {
 	Auth     *auth.Service
 	Accounts *accounts.Service
 	Audit    *audit.Service
+	Media    *media.Service
 }
 
 type sessionResponse struct {
@@ -54,6 +56,26 @@ func Register(deps Deps) func(chi.Router) {
 
 		r.With(deps.Auth.RequireAuth, deps.Auth.RequireEditor).Get("/editor/ping", func(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok", "scope": "editor"})
+		})
+
+		r.Route("/media", func(r chi.Router) {
+			// Capability URLs are authenticated by their signed token, not by a session.
+			r.Put("/upload/{id}", uploadHandler(deps.Media))
+			r.Put("/upload/{id}/parts/{part}", uploadHandler(deps.Media))
+
+			r.Group(func(r chi.Router) {
+				r.Use(deps.Auth.RequireAuth, deps.Auth.RequireEditor)
+				r.Post("/presign", presignHandler(deps.Media))
+				r.Post("/complete", completeMediaHandler(deps.Media))
+				r.Get("/{id}", getMediaHandler(deps.Media))
+				r.Post("/{id}/retry", retryMediaHandler(deps.Media))
+				r.Get("/{id}/original", originalMediaHandler(deps.Media))
+			})
+		})
+
+		r.Route("/assets", func(r chi.Router) {
+			r.Get("/signed", signedAssetHandler(deps.Media))
+			r.Put("/upload", signedPutHandler(deps.Media))
 		})
 	}
 }

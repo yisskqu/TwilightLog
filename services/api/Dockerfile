@@ -27,6 +27,8 @@ WORKDIR /app
 COPY --from=build /out/api /app/api
 COPY --from=build /out/migrate /app/migrate
 
+RUN mkdir -p /app/var/uploads && chown -R app:app /app/var
+
 USER app
 EXPOSE 8080
 

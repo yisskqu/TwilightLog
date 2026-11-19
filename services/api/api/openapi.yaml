@@ -12,6 +12,7 @@ tags:
   - name: auth
   - name: account
   - name: audit
+  - name: media
 paths:
   /healthz:
     get:
@@ -351,6 +352,324 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /api/v1/media/presign:
+    post:
+      tags: [media]
+      summary: 申请媒体上传地址
+      operationId: presignMedia
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          description: 同一批次重复申请时返回同一媒体记录
+          schema:
+            type: string
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MediaPresignRequest"
+      responses:
+        "201":
+          description: 上传地址
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaPresignResponse"
+        "400":
+          description: 参数不合法
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: 文件超过大小限制
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "415":
+          description: 不支持的格式
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: 批次数量超过 20 张
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/media/complete:
+    post:
+      tags: [media]
+      summary: 完成上传并开始处理（幂等）
+      operationId: completeMedia
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MediaCompleteRequest"
+      responses:
+        "200":
+          description: 已处理完成或此前已完成
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaAsset"
+        "202":
+          description: 已进入处理中
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaAsset"
+        "404":
+          description: 媒体不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: 上传未完成或状态冲突
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/media/{id}:
+    get:
+      tags: [media]
+      summary: 查询媒体处理状态
+      operationId: getMedia
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/MediaId"
+      responses:
+        "200":
+          description: 媒体详情
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaAsset"
+        "404":
+          description: 媒体不存在或无权访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/media/{id}/retry:
+    post:
+      tags: [media]
+      summary: 重试失败的处理
+      operationId: retryMedia
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/MediaId"
+      responses:
+        "202":
+          description: 已重新进入处理中
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaAsset"
+        "409":
+          description: 当前状态不可重试
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/media/{id}/original:
+    get:
+      tags: [media]
+      summary: 获取原图短时签名地址
+      operationId: getMediaOriginal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/MediaId"
+      responses:
+        "200":
+          description: 签名地址
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignedURL"
+        "404":
+          description: 媒体不存在或无权访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/media/upload/{id}:
+    put:
+      tags: [media]
+      summary: 直传单个文件（能力地址，无需登录）
+      operationId: uploadMedia
+      parameters:
+        - $ref: "#/components/parameters/MediaId"
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "204":
+          description: 上传成功
+        "403":
+          description: 签名无效或过期
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: 当前状态不接受上传
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: 文件超过大小限制
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/media/upload/{id}/parts/{part}:
+    put:
+      tags: [media]
+      summary: 直传一个分片（能力地址，无需登录）
+      operationId: uploadMediaPart
+      parameters:
+        - $ref: "#/components/parameters/MediaId"
+        - name: part
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "204":
+          description: 分片上传成功
+        "403":
+          description: 签名无效或过期
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: 当前状态不接受上传
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/assets/signed:
+    get:
+      tags: [media]
+      summary: 读取私有原图（签名地址）
+      operationId: getSignedAsset
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: expires
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 原图二进制
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "403":
+          description: 签名无效或过期
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/assets/upload:
+    put:
+      tags: [media]
+      summary: 通用预签名上传（能力地址）
+      operationId: putSignedAsset
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: expires
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "204":
+          description: 上传成功
+        "403":
+          description: 签名无效或过期
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /assets/{key}:
+    get:
+      tags: [media]
+      summary: 读取公开衍生图
+      operationId: getPublicAsset
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: WebP 衍生图
+          content:
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: 文件不存在
 components:
   securitySchemes:
     bearerAuth:
@@ -387,6 +706,14 @@ components:
         minimum: 1
         maximum: 100
         default: 12
+    MediaId:
+      name: id
+      in: path
+      required: true
+      description: 媒体 ID
+      schema:
+        type: string
+        format: uuid
   schemas:
     Health:
       type: object
@@ -597,3 +924,170 @@ components:
           type: integer
         total:
           type: integer
+    MediaPresignRequest:
+      type: object
+      required: [purpose, filename, contentType, size, batchId]
+      properties:
+        purpose:
+          type: string
+          enum: [article, photo]
+        filename:
+          type: string
+        contentType:
+          type: string
+          enum: [image/jpeg, image/png, image/webp, image/heic]
+        size:
+          type: integer
+          format: int64
+          description: 文件字节数
+        batchId:
+          type: string
+          maxLength: 100
+          description: 单次选择的批次标识，同一批次最多 20 张
+    MediaPresignResponse:
+      type: object
+      required: [mediaId, status, uploadMode, headers, expiresIn]
+      properties:
+        mediaId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [uploading, processing, ready, failed]
+        uploadMode:
+          type: string
+          enum: [single, multipart]
+        uploadUrl:
+          type: string
+          description: uploadMode=single 时的直传地址
+        partUrls:
+          type: array
+          description: uploadMode=multipart 时的分片地址
+          items:
+            type: string
+        partSize:
+          type: integer
+          format: int64
+        partCount:
+          type: integer
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        expiresIn:
+          type: integer
+          description: 上传地址有效期（秒）
+    MediaCompleteRequest:
+      type: object
+      required: [mediaId]
+      properties:
+        mediaId:
+          type: string
+          format: uuid
+    MediaVariant:
+      type: object
+      required: [name, url, width, height, size]
+      properties:
+        name:
+          type: string
+          enum: [w480, w960, w1440, w2048, w2560]
+        url:
+          type: string
+        width:
+          type: integer
+        height:
+          type: integer
+        size:
+          type: integer
+          format: int64
+    MediaExif:
+      type: object
+      description: 仅保留白名单字段，绝不包含 GPS
+      properties:
+        cameraMake:
+          type: string
+        cameraModel:
+          type: string
+        lensModel:
+          type: string
+        focalLength:
+          type: string
+        aperture:
+          type: string
+        shutterSpeed:
+          type: string
+        iso:
+          type: integer
+        takenAt:
+          type: string
+        timeZone:
+          type: string
+        exposureBias:
+          type: string
+        whiteBalance:
+          type: string
+        orientation:
+          type: integer
+        sourceWidth:
+          type: integer
+        sourceHeight:
+          type: integer
+    MediaAsset:
+      type: object
+      required: [id, purpose, status, originalFilename, mimeType, fileSize, width, height, blurhash, exif, variants, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        purpose:
+          type: string
+          enum: [article, photo]
+        status:
+          type: string
+          enum: [uploading, processing, ready, failed]
+        originalFilename:
+          type: string
+        mimeType:
+          type: string
+        fileSize:
+          type: integer
+          format: int64
+        width:
+          type: integer
+        height:
+          type: integer
+        blurhash:
+          type: string
+        exif:
+          $ref: "#/components/schemas/MediaExif"
+        variants:
+          type: array
+          items:
+            $ref: "#/components/schemas/MediaVariant"
+        originalUrl:
+          type: string
+          description: 短时签名原图地址，仅 ready 状态返回
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+        processedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    SignedURL:
+      type: object
+      required: [url, expiresIn]
+      properties:
+        url:
+          type: string
+        expiresIn:
+          type: string

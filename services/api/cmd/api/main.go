@@ -13,10 +13,12 @@ import (
 	"github.com/yisskqu/TwilightLog/services/api/internal/accounts"
 	"github.com/yisskqu/TwilightLog/services/api/internal/audit"
 	"github.com/yisskqu/TwilightLog/services/api/internal/auth"
+	"github.com/yisskqu/TwilightLog/services/api/internal/media"
 	"github.com/yisskqu/TwilightLog/services/api/internal/migrations"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/config"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/db"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/httpx"
+	"github.com/yisskqu/TwilightLog/services/api/internal/platform/storage"
 	"github.com/yisskqu/TwilightLog/services/api/internal/server"
 )
 
@@ -56,14 +58,38 @@ func main() {
 	}
 	accountsService := accounts.NewService(pool, auditService)
 
+	backend, err := storage.NewLocal(cfg.LocalStorageRoot, cfg.AssetBaseURL, cfg.APIBaseURL, cfg.MediaSigningSecret)
+	if err != nil {
+		logger.Error("initialize storage adapter", "error", err)
+		os.Exit(1)
+	}
+	mediaRepo := media.NewRepository(pool)
+	mediaService := media.NewService(
+		mediaRepo,
+		backend,
+		media.NewLocalProcessor(backend, logger),
+		media.ServiceConfig{
+			Limits: media.Limits{
+				MaxArticleBytes: cfg.MaxArticleBytes,
+				MaxPhotoBytes:   cfg.MaxPhotoBytes,
+			},
+			BatchLimit:   cfg.MediaBatchLimit,
+			ProcessAsync: cfg.MediaProcessAsync,
+		},
+		logger,
+	)
+	go runMediaCleanup(ctx, mediaService, logger)
+
 	handler := httpx.NewRouterWithOptions(httpx.Options{
 		Pinger:      pool,
 		Logger:      logger,
 		CORSOrigins: cfg.CORSOrigins,
+		Assets:      backend.PublicHandler(),
 		Register: server.Register(server.Deps{
 			Auth:     authService,
 			Accounts: accountsService,
 			Audit:    auditService,
+			Media:    mediaService,
 		}),
 	})
 
@@ -97,4 +123,30 @@ func main() {
 		logger.Error("graceful shutdown", "error", err)
 	}
 	logger.Info("api stopped")
+}
+
+func runMediaCleanup(ctx context.Context, svc *media.Service, logger *slog.Logger) {
+	run := func() {
+		cleanupCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+		defer cancel()
+		removed, err := svc.CleanupStaleUploads(cleanupCtx)
+		if err != nil {
+			logger.Warn("cleanup stale media", "error", err)
+			return
+		}
+		if removed > 0 {
+			logger.Info("cleanup stale media", "removed", removed)
+		}
+	}
+	run()
+	ticker := time.NewTicker(time.Hour)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			run()
+		}
+	}
 }
