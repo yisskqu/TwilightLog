@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>雨停之前 — 街道观察档案</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   雨停之前 / 街道观察档案
+   骨架：左侧竖排书脊 + 全出血图文条目 + 胶片印样
+   原则：无居中容器、无卡片、无圆角、无阴影
+   ============================================================ */
+
+:root{
+  --paper:#EDEFF0;
+  --paper-deep:#E3E6E8;
+  --ink:#101316;
+  --ink-2:#565E63;
+  --ink-3:#98A0A5;
+  --rule:#CFD5D8;
+  --teal:#1F4B5E;
+  --amber:#B7613A;          /* 只用于胶片编号 */
+
+  --serif:"Noto Serif SC","Songti SC",serif;
+  --sans:"Noto Sans SC","PingFang SC",sans-serif;
+  --mono:"JetBrains Mono","Sarasa Mono SC",monospace;
+
+  --rail:64px;
+  --edge:6vw;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--paper)}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  padding-left:var(--rail);
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+img{display:block;width:100%}
+::selection{background:var(--teal);color:var(--paper)}
+
+/* 细颗粒：冷白纸上的一点脏 */
+body::after{
+  content:"";position:fixed;inset:0;z-index:900;pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/><feColorMatrix values='0 0 0 0 0.06 0 0 0 0 0.07 0 0 0 0 0.08 0 0 0 0.16 0'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
+  mix-blend-mode:multiply;opacity:.55;
+}
+
+/* ============ 左侧书脊 ============ */
+.rail{
+  position:fixed;left:0;top:0;bottom:0;width:var(--rail);z-index:100;
+  display:flex;flex-direction:column;align-items:center;
+  padding:22px 0 22px;border-right:1px solid var(--rule);
+  background:rgba(237,239,240,.82);backdrop-filter:blur(8px);
+}
+.rail-mark{
+  writing-mode:vertical-rl;font-family:var(--mono);font-weight:300;
+  font-size:9px;letter-spacing:.28em;color:var(--ink-3);
+}
+.rail-mark b{color:var(--teal);font-weight:400}
+
+/* ============ Logo ============ */
+.logo{display:block;height:28px;width:auto}
+.logo-on-dark{filter:brightness(0) invert(1)}
+.logo-on-light{filter:none}
+
+/* ============ 固定顶部导航 ============ */
+.topbar{
+  position:fixed;top:0;left:var(--rail);right:0;height:58px;z-index:100;
+  display:flex;align-items:center;padding-inline:var(--edge);gap:48px;
+  background:rgba(237,239,240,.88);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--rule);
+  transform:translateY(-100%);transition:transform .7s var(--ease);
+}
+.topbar.visible{transform:translateY(0)}
+.topbar .nav-links{display:flex;gap:32px;margin-left:auto}
+.topbar .nav-links a{
+  font-family:var(--mono);font-size:10px;color:var(--ink-2);
+  letter-spacing:.18em;text-transform:uppercase;padding-block:8px;
+}
+.topbar .nav-links a:hover{color:var(--ink)}
+.topbar .nav-links a::before{content:"/ ";color:var(--ink-3);font-size:9px}
+.rail-track{
+  position:relative;width:1px;flex:1;margin:20px 0;background:var(--rule);
+}
+.rail-fill{
+  position:absolute;top:0;left:0;width:1px;height:0;background:var(--ink);
+  transition:height .18s linear;
+}
+.rail-count{
+  writing-mode:vertical-rl;font-family:var(--mono);font-size:9px;
+  letter-spacing:.18em;color:var(--ink-3);
+}
+.rail-year{
+  writing-mode:vertical-rl;font-family:var(--mono);font-size:9px;
+  letter-spacing:.24em;color:var(--ink-3);margin-top:14px;
+}
+
+/* ============ 首屏：照片铺满，标题压在照片上 ============ */
+.opening{
+  position:relative;height:100svh;overflow:hidden;background:#8C979E;
+}
+.opening-media{
+  position:absolute;inset:0;overflow:hidden;
+}
+.opening-media img{
+  height:100%;object-fit:cover;object-position:50% 55%;
+  transform:scale(1.12);
+  animation:drift 28s ease-in-out infinite alternate;
+  filter:saturate(.72) contrast(1.06) brightness(.92);
+}
+@keyframes drift{
+  0%{transform:scale(1.12) translate3d(0,0,0)}
+  100%{transform:scale(1.2) translate3d(-2.2%,-1.4%,0)}
+}
+/* 湿玻璃：极细竖纹 + 底部压暗 */
+.opening-media::after{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(180deg, rgba(12,16,19,.42) 0%, transparent 34%, transparent 62%, rgba(12,16,19,.55) 100%),
+    repeating-linear-gradient(93deg, rgba(255,255,255,.05) 0 1px, transparent 1px 7px);
+}
+/* 巨型描边字：背景里的"雨" */
+.opening-glyph{
+  position:absolute;right:-4vw;top:6vh;z-index:1;
+  font-family:var(--serif);font-weight:900;font-size:clamp(260px,44vw,760px);
+  line-height:.8;color:transparent;
+  -webkit-text-stroke:1px rgba(240,244,246,.22);
+  user-select:none;pointer-events:none;
+  animation:glyphIn 2.4s var(--ease) .3s both;
+}
+@keyframes glyphIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+
+.opening-top{
+  position:absolute;top:28px;left:var(--edge);right:var(--edge);z-index:3;
+  display:flex;justify-content:space-between;align-items:flex-start;
+  font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(240,244,246,.8);
+}
+.opening-top .l{display:flex;gap:18px;align-items:center}
+.opening-top .bar{width:36px;height:1px;background:rgba(240,244,246,.5)}
+
+.opening-title{
+  position:absolute;left:var(--edge);right:var(--edge);bottom:13vh;z-index:3;
+  font-family:var(--serif);font-weight:900;
+  font-size:clamp(52px,10.6vw,168px);
+  line-height:.94;letter-spacing:-.02em;
+  color:#F2F5F6;text-wrap:balance;
+}
+.opening-title .mask{display:block;overflow:hidden}
+.opening-title .mask > i{
+  display:block;font-style:normal;
+  transform:translateY(108%);
+  animation:lineUp 1.5s var(--ease) forwards;
+}
+.opening-title .mask:nth-child(1) > i{animation-delay:.15s}
+.opening-title .mask:nth-child(2) > i{animation-delay:.29s}
+@keyframes lineUp{to{transform:translateY(0)}}
+.opening-title em{
+  font-style:normal;color:transparent;
+  -webkit-text-stroke:1.2px rgba(242,245,246,.85);
+}
+
+.opening-foot{
+  position:absolute;left:var(--edge);right:var(--edge);bottom:32px;z-index:3;
+  display:flex;justify-content:space-between;align-items:flex-end;
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(240,244,246,.72);
+}
+.opening-foot .walk{display:flex;align-items:center;gap:10px}
+.opening-foot .walk i{
+  display:block;width:1px;height:34px;background:rgba(240,244,246,.6);
+  animation:walkFall 2.2s var(--ease) infinite;
+}
+@keyframes walkFall{0%{transform:scaleY(.2);transform-origin:top;opacity:.2}60%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:0}}
+.opening-foot .num{font-size:10px}
+
+/* ============ 条目通用 ============ */
+.entry{position:relative}
+.kicker{
+  font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;align-items:center;gap:12px;
+}
+.kicker b{font-weight:400;color:var(--teal)}
+.kicker .ruleline{width:40px;height:1px;background:var(--rule)}
+
+/* —— 类型 A：全出血照片，图注贴边 —— */
+.entry-bleed{padding:0}
+.entry-bleed figure{position:relative;height:84svh;overflow:hidden;background:var(--paper-deep)}
+.entry-bleed img{
+  height:100%;object-fit:cover;
+  filter:saturate(.66) contrast(1.05);
+  clip-path:inset(0 0 100% 0);
+  transition:clip-path 1.5s var(--ease),transform 8s linear;
+  transform:scale(1.04);
+}
+.entry-bleed.in img{clip-path:inset(0 0 0 0);transform:scale(1)}
+.entry-bleed .cap-l{
+  position:absolute;left:var(--edge);bottom:34px;z-index:2;
+  font-family:var(--serif);font-weight:400;font-size:clamp(20px,2.4vw,30px);
+  color:#F2F5F6;max-width:22ch;line-height:1.3;letter-spacing:.01em;
+  text-shadow:0 1px 16px rgba(0,0,0,.28);
+}
+.entry-bleed .cap-r{
+  position:absolute;right:var(--edge);bottom:34px;z-index:2;text-align:right;
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(242,245,246,.78);line-height:2;
+}
+.entry-bleed .cap-r b{font-weight:400;color:var(--amber)}
+
+/* —— 类型 B：图文各贴一边，不对称 —— */
+.entry-split{display:grid;grid-template-columns:1fr 1.25fr;min-height:88svh;background:var(--paper)}
+.entry-split.flip{grid-template-columns:1.25fr 1fr}
+.entry-split .txt{
+  padding:15vh var(--edge) 15vh;
+  display:flex;flex-direction:column;justify-content:center;gap:26px;
+  max-width:640px;
+}
+.entry-split.flip .txt{justify-self:end}
+.entry-split h2{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(30px,3.6vw,52px);line-height:1.24;letter-spacing:-.012em;
+  text-wrap:balance;
+}
+.entry-split .meta{
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;gap:16px;flex-wrap:wrap;
+}
+.entry-split p{
+  font-size:15px;line-height:2.05;color:var(--ink-2);max-width:34ch;
+}
+.entry-split p + p{margin-top:-6px}
+.entry-split figure{position:relative;overflow:hidden;background:var(--paper-deep)}
+.entry-split figure img{
+  height:100%;min-height:60svh;object-fit:cover;
+  filter:saturate(.6) contrast(1.05);
+  clip-path:inset(0 0 100% 0);
+  transition:clip-path 1.5s var(--ease);
+}
+.entry-split.in figure img{clip-path:inset(0 0 0 0)}
+.entry-split figure .fig-no{
+  position:absolute;top:20px;right:24px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.8);
+}
+
+/* —— 脚注式代码：挂在文章末尾，可展开 —— */
+.footnote{
+  margin-top:8px;border-top:1px solid var(--rule);padding-top:14px;max-width:34ch;
+}
+.footnote summary{
+  cursor:pointer;list-style:none;
+  font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--teal);display:flex;align-items:center;gap:10px;
+}
+.footnote summary::-webkit-details-marker{display:none}
+.footnote summary::before{content:"⌥";font-size:12px;color:var(--ink-3)}
+.footnote summary::after{content:"+";margin-left:auto;color:var(--ink-3)}
+.footnote[open] summary::after{content:"−"}
+.footnote summary:hover{color:var(--ink)}
+.footnote pre{
+  margin-top:14px;background:#0D1013;color:#C9D0D4;
+  border-left:2px solid var(--amber);
+  padding:18px 20px;font-family:var(--mono);font-size:11.5px;line-height:1.95;
+  overflow-x:auto;
+  animation:footIn .5s var(--ease) both;
+}
+@keyframes footIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.footnote pre .c{color:#6C777E}
+.footnote pre .k{color:#C4866A}
+.footnote pre .s{color:#8FA895}
+.footnote pre .f{color:#7E9EAE}
+
+/* —— 类型 C：纯文字呼吸页，极窄 —— */
+.entry-quiet{
+  padding:22vh var(--edge);display:flex;justify-content:flex-end;
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+}
+.entry-quiet .q{
+  max-width:26ch;
+  font-family:var(--serif);font-weight:400;font-size:clamp(22px,2.6vw,34px);
+  line-height:1.62;letter-spacing:.01em;color:var(--ink);
+}
+.entry-quiet .q .dim{color:var(--ink-3)}
+.entry-quiet .q-sub{
+  margin-top:26px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+
+/* ============ 胶片接触印样 ============ */
+.sheet{padding:14vh var(--edge) 12vh;background:var(--paper-deep)}
+.sheet-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:36px;gap:24px;flex-wrap:wrap}
+.sheet-head h2{
+  font-family:var(--serif);font-weight:600;font-size:clamp(26px,3vw,42px);letter-spacing:-.01em;
+}
+.sheet-head .s-meta{
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);
+}
+.sheet-grid{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:4px;
+  background:var(--rule);padding:4px;
+}
+.frame{
+  position:relative;aspect-ratio:1;overflow:hidden;background:#B9C2C7;cursor:pointer;
+}
+.frame img{
+  height:100%;object-fit:cover;
+  filter:grayscale(1) contrast(1.12) brightness(.96);
+  transition:filter .55s var(--ease),transform .7s var(--ease);
+}
+.frame:hover img{filter:grayscale(0) contrast(1.02);transform:scale(1.07)}
+.frame .fn{
+  position:absolute;bottom:4px;right:6px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--amber);
+  mix-blend-mode:normal;
+}
+.frame::after{
+  content:"";position:absolute;inset:0;
+  border:1px solid rgba(255,255,255,.16);pointer-events:none;
+}
+.sheet-foot{
+  margin-top:28px;display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);
+}
+
+/* ============ 收尾索引 ============ */
+.index-sec{
+  padding:18vh var(--edge) 8vh;display:grid;
+  grid-template-columns:1.1fr 1fr;gap:6vw;align-items:start;
+}
+.index-sec h2{
+  font-family:var(--serif);font-weight:900;
+  font-size:clamp(40px,6vw,96px);line-height:1.02;letter-spacing:-.03em;
+}
+.index-sec h2 em{font-style:normal;color:var(--teal)}
+.index-list{display:flex;flex-direction:column}
+.index-row{
+  display:grid;grid-template-columns:44px 1fr auto 74px;gap:16px;align-items:baseline;
+  padding:16px 0;border-bottom:1px solid var(--rule);
+  transition:padding-left .35s var(--ease),background .35s var(--ease);
+}
+.index-row:hover{padding-left:8px;background:rgba(31,75,94,.04)}
+.index-row .n{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--amber)}
+.index-row .t{font-family:var(--sans);font-size:15px;color:var(--ink)}
+.index-row .c{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase}
+.index-row .y{font-family:var(--mono);font-size:11px;color:var(--ink-3);text-align:right}
+
+.foot{
+  padding:32px var(--edge) 40px;border-top:1px solid var(--rule);
+  display:flex;justify-content:space-between;gap:20px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);
+}
+
+/* ============ 入场：文字块上浮 ============ */
+.rise{opacity:0;transform:translateY(26px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.rise.in{opacity:1;transform:none}
+
+/* ============ 响应式 ============ */
+@media(max-width:1100px){
+  .sheet-grid{grid-template-columns:repeat(4,1fr)}
+  .entry-split,.entry-split.flip{grid-template-columns:1fr;min-height:auto}
+  .entry-split .txt{padding:12vh var(--edge);max-width:none;order:2}
+  .entry-split figure{order:1}
+  .entry-split figure img{min-height:56svh}
+  .index-sec{grid-template-columns:1fr;gap:48px}
+}
+@media(max-width:760px){
+  :root{--rail:0px;--edge:22px}
+  body{padding-left:0}
+  .rail{display:none}
+  .opening-title{font-size:clamp(42px,13vw,72px);bottom:16vh}
+  .opening-glyph{font-size:70vw;right:-12vw;top:12vh}
+  .opening-foot{flex-direction:column;gap:12px;align-items:flex-start}
+  .entry-bleed figure{height:64svh}
+  .entry-bleed .cap-l{font-size:19px;max-width:16ch}
+  .entry-bleed .cap-r{font-size:9px;bottom:30px}
+  .sheet-grid{grid-template-columns:repeat(3,1fr)}
+  .entry-quiet{justify-content:flex-start;padding:14vh var(--edge)}
+  .index-sec h2{font-size:clamp(34px,9vw,56px)}
+  .foot{flex-direction:column;gap:8px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .opening-media img,.opening-glyph,.opening-title .mask > i,
+  .opening-foot .walk i,.rise,.footnote pre{animation:none;transition:none}
+  .opening-title .mask > i{transform:none}
+  .rise{opacity:1;transform:none}
+  .entry-bleed img,.entry-split figure img{clip-path:none;transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- 左侧书脊 -->
+<aside class="rail" aria-hidden="true">
+  <div class="rail-mark"><b>TWILIGHT</b> · LOG</div>
+  <div class="rail-track"><div class="rail-fill" id="railFill"></div></div>
+  <div class="rail-count" id="railCount">FRAME 001</div>
+  <div class="rail-year">MMXXVI</div>
+</aside>
+
+<!-- 固定顶部导航 -->
+<header class="topbar" id="topbar">
+  <a href="#" aria-label="TwilightLog">
+    <img class="logo logo-on-light" src="assets/logo.svg" alt="TwilightLog">
+  </a>
+  <nav class="nav-links">
+    <a href="#">Photography</a>
+    <a href="#">Journey</a>
+    <a href="#">Code</a>
+    <a href="#">About</a>
+  </nav>
+</header>
+
+<!-- ================= 首屏 ================= -->
+<section class="opening">
+  <div class="opening-media">
+    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cinematic%2035mm%20film%20photo%2C%20empty%20rainy%20street%20at%20dusk%2C%20wet%20asphalt%20with%20reflections%2C%20lone%20figure%20with%20black%20umbrella%20walking%20away%2C%20heavy%20rain%2C%20cool%20blue%20grey%20palette%2C%20muted%20desaturated%20tones%2C%20soft%20bokeh%2C%20fine%20grain&image_size=landscape_16_9" alt="雨中的空旷街道，撑伞的人背影渐远">
+  </div>
+  <div class="opening-glyph">雨</div>
+
+  <div class="opening-top">
+    <div class="l">
+      <a href="#"><img class="logo logo-on-dark" src="assets/logo.svg" alt="TwilightLog"></a>
+      <span class="bar"></span>
+      <span>街道观察档案 · 卷 03</span>
+    </div>
+    <span>MMXXVI</span>
+  </div>
+
+  <h1 class="opening-title">
+    <span class="mask"><i>雨停之前，</i></span>
+    <span class="mask"><i><em>拍下</em>了 14 帧。</i></span>
+  </h1>
+
+  <div class="opening-foot">
+    <span>中京区 · 18:42 · 8℃</span>
+    <span class="walk"><i></i>往下走</span>
+    <span class="num">014 / 036</span>
+  </div>
+</section>
+
+<!-- ================= 条目 01：全出血 ================= -->
+<section class="entry entry-bleed" data-frame="01">
+  <figure>
+    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=japanese%20narrow%20alleyway%20in%20heavy%20rain%20at%20night%2C%20wet%20stone%20pavement%20reflecting%20warm%20window%20light%2C%20glowing%20shoji%20screens%2C%20cold%20cyan%20ambient%20light%2C%20cinematic%20film%20grain%20photograph&image_size=landscape_16_9" alt="雨夜中的日本窄巷，湿石地反射窗光">
+    <figcaption class="cap-l">雨从三点开始下，没有要停的意思。</figcaption>
+    <div class="cap-r">01 / 014<br><b>f/2.0</b> · 1/125 · ISO 1250<br>京都 · 中京区</div>
+  </figure>
+</section>
+
+<!-- ================= 条目 02：图文不对称 + 代码脚注 ================= -->
+<section class="entry entry-split" data-frame="02">
+  <div class="txt rise">
+    <div class="kicker"><b>02</b> <span class="ruleline"></span> 旅行笔记</div>
+    <h2>凌晨五点到仁川，雨还没醒</h2>
+    <div class="meta"><span>Seoul</span><span>2026-01-14</span><span>8 段</span></div>
+    <p>海关的灯比想象中亮。出租车司机不太会说英语，但一路在点头。民宿在弘大旁边一条上坡小路，三楼，楼道灯坏了，我摸黑上去，钥匙插了三次才对准。</p>
+    <p>房间很小，窗户对着隔壁的墙。我坐在床沿听完一首歌，外面的雨刚好下大。</p>
+    <details class="footnote">
+      <summary>当天的代码 · 12 行</summary>
+      <pre><span class="c">// 等雨停的时候写的一个小工具</span>
+<span class="c">// 把当天所有照片按拍摄时间重命名</span>
+<span class="k">const</span> <span class="f">renameByTime</span> = (files) =&gt;
+  files
+    .<span class="f">map</span>(f =&gt; ({ f, t: <span class="f">exif</span>(f).DateTimeOriginal }))
+    .<span class="f">sort</span>((a, b) =&gt; a.t - b.t)
+    .<span class="f">map</span>(({ f, t }, i) =&gt;
+      <span class="s">`${<span class="f">fmt</span>(t)}_${<span class="f">pad</span>(i + 1)}${<span class="f">ext</span>(f)}`</span>
+    );</pre>
+    </details>
+  </div>
+  <figure>
+    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=raindrops%20on%20a%20window%20glass%20at%20night%2C%20blurred%20city%20lights%20behind%2C%20cold%20blue%20tones%2C%20shallow%20depth%20of%20field%2C%2035mm%20film%20photograph%2C%20quiet%20melancholic%20mood&image_size=portrait_4_3" alt="夜雨中布满水珠的窗户，窗外城市灯光虚化">
+    <span class="fig-no">02</span>
+  </figure>
+</section>
+
+<!-- ================= 条目 03：纯文字呼吸 ================= -->
+<section class="entry entry-quiet">
+  <div class="rise">
+    <p class="q">我这几年拍的东西，<span class="dim">大多是在等的时候拍的</span>。等雨小一点，等红灯，等一碗面端上来。</p>
+    <p class="q-sub">— 关于方法</p>
+  </div>
+</section>
+
+<!-- ================= 条目 04：全出血 ================= -->
+<section class="entry entry-bleed" data-frame="04">
+  <figure>
+    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=puddle%20reflection%20of%20streetlights%20and%20neon%20on%20wet%20asphalt%2C%20rainy%20night%2C%20minimal%20composition%2C%20cold%20grey%20blue%20tone%2C%2035mm%20film%20grain%2C%20high%20contrast%20reflections&image_size=landscape_16_9" alt="湿沥青路面上街灯的倒影">
+    <figcaption class="cap-l">地上的城市，比上面的清楚。</figcaption>
+    <div class="cap-r">04 / 014<br><b>f/4.0</b> · 1/60 · ISO 3200<br>东京 · 涩谷</div>
+  </figure>
+</section>
+
+<!-- ================= 条目 05：图文不对称（反向）+ 代码脚注 ================= -->
+<section class="entry entry-split flip" data-frame="05">
+  <figure>
+    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=back%20view%20of%20a%20person%20in%20a%20long%20dark%20coat%20walking%20in%20rain%20on%20an%20empty%20street%2C%20slight%20motion%20blur%2C%20cold%20desaturated%20palette%2C%20documentary%20street%20photography%2C%20film%20grain&image_size=portrait_4_3" alt="雨天街道上穿长外套行人的背影">
+    <span class="fig-no">05</span>
+  </figure>
+  <div class="txt rise">
+    <div class="kicker"><b>05</b> <span class="ruleline"></span> 代码笔记</div>
+    <h2>为什么我把站点的图片流水线重写了三遍</h2>
+    <div class="meta"><span>Rust</span><span>2026-02-19</span><span>8 分钟</span></div>
+    <p>第一遍是为跑通，第二遍是为好看，第三遍只是因为我看不下去那堆回调。真正花时间的不是并行，是把「什么时候该缩、缩到多大」这件事从业务里拆出来。</p>
+    <p>最后它只剩下一个函数，接受一张图和一个目标宽度。</p>
+    <details class="footnote">
+      <summary>核心实现 · 18 行</summary>
+      <pre><span class="c">// srcset 的每一档都走同一条路径</span>
+<span class="k">pub fn</span> <span class="f">derive</span>(src: &amp;Path, widths: &amp;[u32]) -&gt; Vec&lt;Output&gt; {
+    widths
+        .<span class="f">par_iter</span>()
+        .<span class="f">map</span>(|&amp;w| {
+            <span class="k">let</span> img = <span class="f">decode</span>(src)?;
+            <span class="k">let</span> out = <span class="f">resize</span>(&amp;img, w);
+            <span class="f">encode</span>(out, w)
+        })
+        .<span class="f">collect</span>()
+}</pre>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 胶片接触印样 ================= -->
+<section class="sheet">
+  <div class="sheet-head">
+    <h2>接触印样 · 全部 36 帧</h2>
+    <div class="s-meta">Roll 03 / Fujifilm X100VI / 23mm</div>
+  </div>
+
+  <div class="sheet-grid">
+    <!-- 18 帧，重复使用 5 张底片的不同裁切位，模拟同一卷 -->
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=japanese%20narrow%20alleyway%20in%20heavy%20rain%20at%20night%2C%20wet%20stone%20pavement%2C%20cold%20cyan%20light%2C%20film%20grain&image_size=square" alt="雨夜小巷" style="object-position:30% 40%"><span class="fn">01A</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=rainy%20street%20dusk%20wet%20asphalt%20reflections%20lone%20umbrella%20figure%20cool%20blue%20grey%20film%20grain&image_size=square" alt="黄昏雨中街道" style="object-position:60% 50%"><span class="fn">02</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=puddle%20reflection%20streetlight%20wet%20asphalt%20rainy%20night%20minimal%20cold%20grey%20film%20grain&image_size=square" alt="路面积水倒影" style="object-position:40% 70%"><span class="fn">03</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=raindrops%20on%20window%20glass%20night%20blurred%20city%20lights%20cold%20blue%20film&image_size=square" alt="窗上雨滴" style="object-position:50% 30%"><span class="fn">04</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=person%20in%20long%20coat%20walking%20in%20rain%20empty%20street%20back%20view%20motion%20blur%20desaturated%20film&image_size=square" alt="雨中行人背影" style="object-position:45% 45%"><span class="fn">05A</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=wet%20concrete%20wall%20rain%20streaks%20abstract%20minimal%20texture%20cold%20grey%20film%20grain&image_size=square" alt="雨水流过的混凝土墙" style="object-position:55% 55%"><span class="fn">06</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=japanese%20narrow%20alleyway%20in%20heavy%20rain%20at%20night%2C%20wet%20stone%20pavement%2C%20cold%20cyan%20light%2C%20film%20grain&image_size=square" alt="雨夜小巷" style="object-position:70% 30%"><span class="fn">07</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=puddle%20reflection%20streetlight%20wet%20asphalt%20rainy%20night%20minimal%20cold%20grey%20film%20grain&image_size=square" alt="路面积水倒影" style="object-position:60% 40%"><span class="fn">08</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=rainy%20street%20dusk%20wet%20asphalt%20reflections%20lone%20umbrella%20figure%20cool%20blue%20grey%20film%20grain&image_size=square" alt="黄昏雨中街道" style="object-position:35% 60%"><span class="fn">09</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=person%20in%20long%20coat%20walking%20in%20rain%20empty%20street%20back%20view%20motion%20blur%20desaturated%20film&image_size=square" alt="雨中行人背影" style="object-position:55% 35%"><span class="fn">10A</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=raindrops%20on%20window%20glass%20night%20blurred%20city%20lights%20cold%20blue%20film&image_size=square" alt="窗上雨滴" style="object-position:30% 60%"><span class="fn">11</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=wet%20concrete%20wall%20rain%20streaks%20abstract%20minimal%20texture%20cold%20grey%20film%20grain&image_size=square" alt="雨水流过的混凝土墙" style="object-position:40% 45%"><span class="fn">12</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=japanese%20narrow%20alleyway%20in%20heavy%20rain%20at%20night%2C%20wet%20stone%20pavement%2C%20cold%20cyan%20light%2C%20film%20grain&image_size=square" alt="雨夜小巷" style="object-position:50% 70%"><span class="fn">13A</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=puddle%20reflection%20streetlight%20wet%20asphalt%20rainy%20night%20minimal%20cold%20grey%20film%20grain&image_size=square" alt="路面积水倒影" style="object-position:25% 55%"><span class="fn">14</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=rainy%20street%20dusk%20wet%20asphalt%20reflections%20lone%20umbrella%20figure%20cool%20blue%20grey%20film%20grain&image_size=square" alt="黄昏雨中街道" style="object-position:75% 45%"><span class="fn">15</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=person%20in%20long%20coat%20walking%20in%20rain%20empty%20street%20back%20view%20motion%20blur%20desaturated%20film&image_size=square" alt="雨中行人背影" style="object-position:65% 50%"><span class="fn">16</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=raindrops%20on%20window%20glass%20night%20blurred%20city%20lights%20cold%20blue%20film&image_size=square" alt="窗上雨滴" style="object-position:70% 25%"><span class="fn">17A</span></div>
+    <div class="frame"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=wet%20concrete%20wall%20rain%20streaks%20abstract%20minimal%20texture%20cold%20grey%20film%20grain&image_size=square" alt="雨水流过的混凝土墙" style="object-position:20% 65%"><span class="fn">18</span></div>
+  </div>
+
+  <div class="sheet-foot">
+    <span>36 帧 · 选自 2025.08 – 2026.03</span>
+    <span>悬停看彩色 · 点击看大图</span>
+  </div>
+</section>
+
+<!-- ================= 收尾索引 ================= -->
+<section class="index-sec">
+  <h2>这里没有分类。<br><em>往下走就是了。</em></h2>
+  <div class="index-list">
+    <a class="index-row" href="#"><span class="n">01</span><span class="t">雨夜的巷子与它的倒影</span><span class="c">摄影</span><span class="y">2026</span></a>
+    <a class="index-row" href="#"><span class="n">02</span><span class="t">凌晨五点到仁川，雨还没醒</span><span class="c">旅行</span><span class="y">2026</span></a>
+    <a class="index-row" href="#"><span class="n">03</span><span class="t">为什么我把图片流水线重写了三遍</span><span class="c">代码</span><span class="y">2026</span></a>
+    <a class="index-row" href="#"><span class="n">04</span><span class="t">地上的城市，比上面的清楚</span><span class="c">摄影</span><span class="y">2026</span></a>
+    <a class="index-row" href="#"><span class="n">05</span><span class="t">三年后又到伏见稻荷</span><span class="c">旅行</span><span class="y">2025</span></a>
+    <a class="index-row" href="#"><span class="n">06</span><span class="t">关于「等」这件小事</span><span class="c">随笔</span><span class="y">2025</span></a>
+    <a class="index-row" href="#"><span class="n">07</span><span class="t">给十万行项目加严格类型的三个月</span><span class="c">代码</span><span class="y">2025</span></a>
+  </div>
+</section>
+
+<footer class="foot">
+  <span>© 2026 · 雨停之前</span>
+  <span>街道观察档案 / 卷 03</span>
+  <span>中京区 · 18:42</span>
+</footer>
+
+<script>
+  /* 书脊进度 + 帧计数 + 顶部导航 */
+  const fill=document.getElementById('railFill');
+  const count=document.getElementById('railCount');
+  const topbar=document.getElementById('topbar');
+  let raf;
+  function onScroll(){
+    cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(()=>{
+      const h=document.documentElement.scrollHeight-window.innerHeight;
+      const p=h>0?Math.min(1,window.scrollY/h):0;
+      fill.style.height=(p*100)+'%';
+      const f=String(Math.max(1,Math.round(p*36))).padStart(3,'0');
+      count.textContent='FRAME '+f;
+      topbar.classList.toggle('visible',window.scrollY>window.innerHeight*0.6);
+    });
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+
+  /* 图片裁切揭示 + 文字上浮 */
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}
+    });
+  },{threshold:.12,rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.entry-bleed,.entry-split,.rise').forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>

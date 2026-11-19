@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: twilightlog-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-twilightlog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-twilightlog_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-twilightlog}
+      TZ: Asia/Shanghai
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - twilightlog_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-twilightlog} -d ${POSTGRES_DB:-twilightlog}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  twilightlog_pgdata:

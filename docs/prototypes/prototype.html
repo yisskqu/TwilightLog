@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文影集 · 功能原型</title>
+<style>
+:root{--bg:#faf9f6;--fg:#1f2328;--muted:#6b7280;--card:#fff;--line:#dcdcd6;--accent:#2f6f5e;--danger:#b3261e;--chip:#efeee9}
+[data-theme="dark"]{--bg:#151a18;--fg:#e7e7e2;--muted:#9aa5a0;--card:#1e2422;--line:#35403b;--accent:#7fc7b2;--danger:#ff8a80;--chip:#28322e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+a{color:var(--accent)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:50;background:var(--card);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:14px;height:56px;flex-wrap:nowrap;overflow-x:auto}
+.brand{font-weight:700;text-decoration:none;color:var(--fg);white-space:nowrap}
+.nav a{text-decoration:none;color:var(--muted);white-space:nowrap}
+.nav a.on{color:var(--accent);font-weight:600}
+h1{font-size:26px;margin:22px 0 8px}
+h2{font-size:20px;margin:26px 0 10px}
+h3{font-size:16px;margin:16px 0 6px}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin:16px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;color:inherit;text-decoration:none;display:block}
+.card:hover{border-color:var(--accent)}
+.thumb{border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;overflow:hidden}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+input,select,button,textarea{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg)}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.danger{color:var(--danger);border-color:var(--danger)}
+.chip{display:inline-block;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;margin:2px;background:var(--chip);color:var(--fg);text-decoration:none}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pager{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:20px 0}
+.pager button.on{background:var(--accent);color:#fff}
+.notice{border:1px dashed var(--line);border-radius:6px;padding:12px;color:var(--muted);margin:14px 0}
+.waterfall{column-count:4;column-gap:8px;margin:16px 0}
+@media(max-width:900px){.waterfall{column-count:3}}
+@media(max-width:620px){.waterfall{column-count:2}}
+.wf-item{break-inside:avoid;margin:0 0 8px;cursor:zoom-in}
+.wf-item .thumb{border-radius:4px}
+.article-layout{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:36px;align-items:start;margin:20px 0 60px}
+@media(max-width:900px){.article-layout{grid-template-columns:1fr}}
+.article-body{max-width:760px}
+.article-body p{margin:10px 0}
+.article-body pre{background:var(--chip);padding:12px;margin:0;border-radius:0;overflow:auto;font-size:13px}
+.code-block{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:14px 0;background:var(--chip)}
+.code-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:var(--card);border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);user-select:none}
+.code-lang{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.code-copy{padding:2px 9px;font-size:12px;line-height:1.6;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--muted)}
+.code-copy:hover,.code-copy:focus-visible{color:var(--fg);border-color:var(--accent)}
+.code-copy.ok{background:var(--accent);border-color:var(--accent);color:#fff}
+.article-body blockquote{border-left:3px solid var(--line);margin:12px 0;padding:2px 12px;color:var(--muted)}
+.article-body .figure{aspect-ratio:16 / 9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;margin:14px 0}
+.formula{text-align:center;padding:12px;background:var(--chip);border-radius:6px;margin:12px 0}
+.mermaid{border:1px dashed var(--line);border-radius:6px;padding:20px;text-align:center;color:var(--muted);margin:12px 0}
+.toc{position:sticky;top:74px;border-left:1px solid var(--line);padding-left:12px;font-size:13px;max-height:80vh;overflow:auto}
+.toc .toclink{display:block;width:100%;text-align:left;border:0;background:none;padding:3px 0;color:var(--muted);cursor:pointer}
+.toc .toclink.sub{padding-left:12px;font-size:12px}
+.toc .toclink.active{color:var(--accent);font-weight:600}
+.article-body h2,.article-body h3{scroll-margin-top:80px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100}
+.lightbox{background:var(--card);border-radius:10px;max-width:1100px;width:100%;max-height:92vh;overflow:auto;display:grid;grid-template-columns:1.6fr 1fr}
+@media(max-width:820px){.lightbox{grid-template-columns:1fr}}
+.zoom-stage{position:relative;height:min(68vh,620px);background:#101514;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;border-radius:10px 0 0 10px;user-select:none}
+.zoom-stage.dragging{cursor:grabbing}
+.zoom-stage.short{height:min(58vh,500px);border-radius:8px}
+@media(max-width:820px){.zoom-stage{height:46vh;border-radius:10px 10px 0 0}.zoom-stage.short{height:40vh}}
+.zoom-inner{flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;transform-origin:center center;will-change:transform;border-radius:2px;text-align:center}
+.zoom-tip{position:absolute;top:10px;left:12px;color:rgba(255,255,255,.72);font-size:12px;pointer-events:none}
+.zoom-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:58px;border:0;border-radius:8px;background:rgba(0,0,0,.45);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s;z-index:3;cursor:pointer;padding:0}
+.zoom-nav.prev{left:12px}
+.zoom-nav.next{right:12px}
+.zoom-nav:hover{background:rgba(0,0,0,.72)}
+.zoom-stage:hover .zoom-nav,.zoom-stage:focus-within .zoom-nav{opacity:1}
+.zoom-nav:disabled{opacity:0!important;cursor:default}
+@media(hover:none){.zoom-nav{opacity:.7}}
+.lightbox:focus{outline:none}
+.lb-info{padding:18px;position:relative}
+.lb-close{position:absolute;top:10px;right:10px}
+.meta-row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:6px 0;font-size:13px}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.dialog{background:var(--card);border-radius:10px;padding:20px;max-width:460px;width:100%;max-height:85vh;overflow:auto}
+.preview-panel{background:var(--card);border-radius:10px;padding:20px;max-width:900px;width:100%;max-height:92vh;overflow:auto}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+th{background:var(--chip);font-weight:600;white-space:nowrap}
+.status{font-size:12px;padding:1px 7px;border-radius:4px;background:var(--chip);white-space:nowrap}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.tabs a{text-decoration:none}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2b2b2b;color:#fff;padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:.2s;z-index:300;max-width:90vw}
+.toast.show{opacity:1}
+footer{padding:30px 0;border-top:1px solid var(--line);margin-top:40px}
+.kv{display:grid;grid-template-columns:100px 1fr;gap:6px 12px;font-size:13px}
+.review-box{border:1px solid var(--line);border-radius:8px;padding:14px;background:var(--card);margin:12px 0}
+</style>
+</head>
+<body>
+<header id="topbar"></header>
+<main id="app" class="wrap"></main>
+<footer class="wrap muted small">功能原型 · 所有内容均为模拟数据，仅用于验证页面流程与交互，不代表最终视觉设计。</footer>
+<div id="modal-root"></div>
+<div id="toast" class="toast"></div>
+<script>
+'use strict';
+/* ================= 基础工具 ================= */
+var TODAY = '2026-11-18';
+var PAGE_SIZE = 12;
+var state = {
+  role: localStorage.getItem('proto_role') || 'visitor',
+  theme: localStorage.getItem('proto_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+};
+document.documentElement.dataset.theme = state.theme;
+
+function $(sel, root){ return (root || document).querySelector(sel); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+var toastTimer;
+function toast(msg){
+  var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+var seed = 11;
+function rnd(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+function iso(days){
+  var d = new Date(Date.UTC(2026, 10, 18));
+  d.setUTCDate(d.getUTCDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+function hueOf(id){
+  var h = 0; for (var i = 0; i < id.length; i++) h += id.charCodeAt(i) * (i + 3);
+  return h % 360;
+}
+function thumbStyle(id, ratio){
+  var h = hueOf(id);
+  return 'aspect-ratio:' + (ratio || '4 / 3') + ';background:linear-gradient(135deg,hsl(' + h + ' 34% 58%),hsl(' + ((h + 48) % 360) + ' 42% 38%))';
+}
+function dateOnly(v){ return v || ''; }
+
+/* ================= 模拟数据 ================= */
+var ARTICLE_TAGS = ['旅行','技术','教程','前端','随笔','长文','性能','架构','工具','GraphQL'];
+var PHOTO_TAGS = ['夜景','城市','自然','街拍','雨天','山野','建筑','人文','色彩','长曝光'];
+
+var TITLES = ['从一次路线调整说起','清晨的窄巷','代码之外的取舍','缓存与失效边界','山路上的雨','旧城的立面','组件拆分的时机','一次性能回查','集市与陌生人','海岸线的光','构建速度优化记','类型系统的小陷阱','江边的四季','开源项目的第 100 天','图表背后的数据','拆迁前的最后一周','夜班公交','数据库索引复盘','屋顶上的猫','工地与黄昏','部署失败之后','雪线以上','镜头里的雨','一条街的十二小时'];
+
+var ACOL_NAMES = ['川西环线手记','岭南城市观察','前端工程化实践','数据库与存储','摄影后期笔记','西北自驾','设计系统拆解','性能优化手册','街头人间','山海之间','构建工具内幕','TypeScript 深潜','江畔四季','开源项目日志','可视化与图表','旧城改造记录'];
+
+var acols = ACOL_NAMES.map(function(name, i){
+  var tags = [ARTICLE_TAGS[(i * 3) % ARTICLE_TAGS.length], ARTICLE_TAGS[(i * 5 + 2) % ARTICLE_TAGS.length]];
+  tags = tags.filter(function(v, idx){ return tags.indexOf(v) === idx; });
+  return { id: 'ac' + i, name: name, desc: '关于「' + name + '」的长期记录与阶段性整理，包含过程中的取舍和复盘。', tags: tags, createdAt: iso(520 - i * 22), updatedAt: iso(i * 6 + 1), articleCount: 0 };
+});
+
+var articles = [];
+acols.forEach(function(col, ci){
+  var n = ci === 0 ? 21 : 2 + (ci % 2);
+  col.articleCount = n;
+  for (var k = 0; k < n; k++){
+    var title = TITLES[(ci * 3 + k) % TITLES.length];
+    var tags = [ARTICLE_TAGS[(ci + k) % ARTICLE_TAGS.length], ARTICLE_TAGS[(ci * 2 + k + 3) % ARTICLE_TAGS.length]];
+    tags = tags.filter(function(v, idx){ return tags.indexOf(v) === idx; });
+    articles.push({
+      id: 'ar' + ci + '_' + k,
+      colId: col.id,
+      title: title,
+      summary: '围绕「' + title + '」的一段摘要，用于验证列表中的长短文本、标签换行与分页表现。',
+      tags: tags,
+      publishedAt: iso(300 - ((ci * 13 + k * 7) % 280)),
+      updatedAt: iso((ci * 3 + k * 5) % 200)
+    });
+  }
+});
+
+var GENRES = ['街拍','自然风光','城市风光'];
+var PCOL_NAMES = ['雨夜街头','城市天际线','山野与云','海边清晨','老城巷弄','地铁瞬间','雪山脚下','江畔夜色','人群与光','森林深处','楼宇几何','市井烟火','旷野星空','桥与河流'];
+var ALBUM_TITLES = ['十一月的雨','天台之上','风口','退潮之后','巷口的下午','末班车','雪线','江面反光','人群缝隙','林间小路','玻璃幕墙','早市','银河','桥下'];
+var RATIOS = ['16 / 9','4 / 3','1 / 1','3 / 4','2 / 3','3 / 2'];
+var LOCS = [
+  { country:'中国', province:'四川省', city:'成都市', district:'锦江区', town:'', street:'春熙路', place:'某公园' },
+  { country:'中国', province:'四川省', city:'成都市', district:'', town:'', street:'', place:'' },
+  { country:'中国', province:'浙江省', city:'杭州市', district:'西湖区', town:'', street:'', place:'' },
+  { country:'中国', province:'云南省', city:'大理市', district:'', town:'', street:'', place:'' },
+  { country:'', province:'', city:'', district:'', town:'', street:'', place:'' }
+];
+
+var pcols = PCOL_NAMES.map(function(name, i){
+  var tags = [PHOTO_TAGS[(i + 5) % PHOTO_TAGS.length], PHOTO_TAGS[(i * 4 + 1) % PHOTO_TAGS.length]];
+  tags = tags.filter(function(v, idx){ return tags.indexOf(v) === idx; });
+  return { id: 'pc' + i, name: name, desc: '以「' + name + '」为主题的影像组，按拍摄阶段分成不同相册。', genre: GENRES[i % 3], tags: tags, createdAt: iso(480 - i * 25), updatedAt: iso(i * 7 + 2), albumCount: 0 };
+});
+
+var albums = [];
+var photos = [];
+pcols.forEach(function(col, ci){
+  var count = ci === 0 ? 3 : 2;
+  col.albumCount = count;
+  for (var j = 0; j < count; j++){
+    var aid = 'al' + ci + '_' + j;
+    var latestDays = Math.max(1, 150 - (ci * 9 + j * 4));
+    var album = {
+      id: aid,
+      colId: col.id,
+      title: ALBUM_TITLES[(ci * 2 + j) % ALBUM_TITLES.length] + (j === 1 ? ' II' : ''),
+      desc: '相册简介：记录这一阶段的拍摄现场与选择。',
+      tags: [col.tags[0], PHOTO_TAGS[(ci + j + 8) % PHOTO_TAGS.length]].filter(function(v, idx, a){ return a.indexOf(v) === idx; }),
+      createdAt: iso(320 - ci * 6),
+      latestAt: iso(latestDays),
+      location: LOCS[(ci + j) % 5],
+      photos: []
+    };
+    var pn = (ci === 0 && j === 0) ? 15 : 6 + ((ci + j) % 5);
+    for (var p = 0; p < pn; p++){
+      var pid = 'ph' + ci + '_' + j + '_' + p;
+      var meta = {
+        camera: p % 4 === 0 ? '' : (p % 2 ? 'Sony A7C' : 'Fujifilm X-T5'),
+        lens: p % 5 === 0 ? '' : (p % 2 ? '35mm F1.8' : '23mm F2'),
+        focal: p % 5 === 0 ? '' : (23 + p * 3) + 'mm',
+        aperture: p % 3 === 0 ? '' : 'f/' + (1.8 + (p % 4) * 1.4).toFixed(1),
+        shutter: p % 3 === 0 ? '' : '1/' + (60 + p * 15) + 's',
+        iso: p % 4 === 0 ? '' : String(100 + p * 80)
+      };
+      photos.push({
+        id: pid,
+        albumId: aid,
+        title: '照片 ' + (p + 1),
+        desc: p % 4 === 0 ? '' : '现场描述示例：光线、人物与当时的判断。',
+        ratio: RATIOS[(ci + j + p) % RATIOS.length],
+        shotAt: iso((piDays(ci, j, p))),
+        tags: [col.tags[0], PHOTO_TAGS[(p + ci) % PHOTO_TAGS.length]].filter(function(v, idx, a){ return a.indexOf(v) === idx; }),
+        meta: meta,
+        location: LOCS[(ci + p) % 5]
+      });
+      album.photos.push(pid);
+    }
+    albums.push(album);
+  }
+});
+function piDays(ci, j, p){ return (ci * 17 + j * 23 + p * 11) % 260; }
+
+var MIN_DATE = '2023-01-01';
+(function(){
+  var all = acols.concat(pcols).map(function(x){ return x.createdAt; }).sort();
+  if (all.length) MIN_DATE = all[0];
+})();
+
+/* ================= 状态与记录 ================= */
+var listState = {};
+function LS(key, sort){
+  if (!listState[key]) listState[key] = { q:'', tags:[], from:'', to:'', sort: sort, page: 1 };
+  return listState[key];
+}
+var reviews = [
+  { id:'rv1', type:'文章', title:'雨后的老街', submitter:'editor_lin', at:'2026-11-17 20:14', kind:'修改', status:'待审核' },
+  { id:'rv2', type:'相册', title:'十一月的雨', submitter:'editor_zhao', at:'2026-11-17 18:02', kind:'首次发布', status:'待审核' },
+  { id:'rv3', type:'照片', title:'天台之上 · 照片 3', submitter:'editor_lin', at:'2026-11-16 11:40', kind:'修改', status:'待审核' },
+  { id:'rv4', type:'文章', title:'构建速度优化记', submitter:'editor_zhao', at:'2026-11-15 09:22', kind:'首次发布', status:'待审核' }
+];
+var contentItems = [];
+articles.slice(0, 8).forEach(function(a){
+  contentItems.push({ id:a.id, type:'文章', title:a.title, owner:'editor_lin', status:'已发布', updated:a.updatedAt });
+});
+albums.slice(0, 6).forEach(function(al){
+  contentItems.push({ id:al.id, type:'相册', title:al.title, owner:'editor_zhao', status:'已发布', updated:al.latestAt });
+});
+var recycleItems = [
+  { id:'rc1', type:'文章', title:'未完成的草稿 A', owner:'editor_lin', by:'编辑', at:'2026-11-09' },
+  { id:'rc2', type:'照片', title:'照片 12', owner:'editor_zhao', by:'管理员', at:'2026-11-07' }
+];
+var users = [
+  { name:'admin', role:'管理员', fixed:true, last:'2026-11-18 09:00' },
+  { name:'editor_lin', role:'编辑', fixed:false, last:'2026-11-17 20:14' },
+  { name:'editor_zhao', role:'编辑', fixed:false, last:'2026-11-17 18:02' },
+  { name:'visitor_wang', role:'访客', fixed:false, last:'2026-11-15 12:30' }
+];
+var homeCfg = { nA: 3, nB: 3, a: [], b: [] };
+var myStatus = {};
+var adminContentState = { type:'全部', status:'全部', q:'' };
+
+/* ================= 列表控制 ================= */
+function controlsHTML(s, sortOptions, tagPool){
+  var opts = sortOptions.map(function(o){
+    return '<option value="' + o[0] + '"' + (s.sort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+  }).join('');
+  var tags = (tagPool || []).map(function(t){
+    return '<button class="chip ' + (s.tags.indexOf(t) > -1 ? 'on' : '') + '" data-tag="' + t + '">' + t + '</button>';
+  }).join('');
+  return '<div class="toolbar">' +
+    '<input id="q" placeholder="输入关键词搜索" value="' + esc(s.q) + '" style="min-width:220px">' +
+    '<button class="primary" id="doSearch">搜索</button>' +
+    '<label class="small">从 <input type="date" id="from" value="' + s.from + '" min="' + MIN_DATE + '" max="' + TODAY + '"></label>' +
+    '<label class="small">到 <input type="date" id="to" value="' + s.to + '" min="' + MIN_DATE + '" max="' + TODAY + '"></label>' +
+    '<select id="sort">' + opts + '</select>' +
+    '<button id="reset">重置</button>' +
+    '</div><div class="toolbar">' + tags + '</div>';
+}
+function bindControls(s, rerender){
+  var q = $('#q'), from = $('#from'), to = $('#to'), sort = $('#sort');
+  if (q){
+    $('#doSearch').onclick = function(){ s.q = q.value.trim(); s.page = 1; rerender(); };
+    q.onkeydown = function(e){ if (e.key === 'Enter'){ s.q = q.value.trim(); s.page = 1; rerender(); } };
+  }
+  $('#reset').onclick = function(){ s.q = ''; s.tags = []; s.from = ''; s.to = ''; s.page = 1; rerender(); };
+  from.onchange = function(){
+    if (from.value && to.value && from.value > to.value){ toast('开始日期不能晚于结束日期'); return; }
+    s.from = from.value; s.page = 1; rerender();
+  };
+  to.onchange = function(){
+    if (from.value && to.value && from.value > to.value){ toast('开始日期不能晚于结束日期'); return; }
+    s.to = to.value; s.page = 1; rerender();
+  };
+  sort.onchange = function(){ s.sort = sort.value; s.page = 1; rerender(); };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-tag]'), function(btn){
+    btn.onclick = function(){
+      var t = btn.getAttribute('data-tag');
+      var idx = s.tags.indexOf(t);
+      if (idx > -1) s.tags.splice(idx, 1); else s.tags.push(t);
+      s.page = 1; rerender();
+    };
+  });
+}
+function matchTags(item, s){ return s.tags.every(function(t){ return item.tags.indexOf(t) > -1; }); }
+function matchQ(text, s){ return !s.q || String(text).toLowerCase().indexOf(s.q.toLowerCase()) > -1; }
+function matchDate(d, s){
+  if (s.from && d < s.from) return false;
+  if (s.to && d > s.to) return false;
+  return true;
+}
+function pagerHTML(total, page, onPage){
+  var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (total === 0) return '';
+  var html = '<div class="pager"><button data-page="' + (page - 1) + '"' + (page <= 1 ? ' disabled' : '') + '>上一页</button>';
+  for (var i = 1; i <= pages; i++){
+    html += '<button data-page="' + i + '" class="' + (i === page ? 'on' : '') + '">' + i + '</button>';
+  }
+  html += '<button data-page="' + (page + 1) + '"' + (page >= pages ? ' disabled' : '') + '>下一页</button>';
+  html += '<span class="muted small">共 ' + total + ' 项 · 每页 ' + PAGE_SIZE + ' 项</span></div>';
+  return html;
+}
+function bindPager(s, rerender){
+  Array.prototype.forEach.call(document.querySelectorAll('.pager button[data-page]'), function(btn){
+    btn.onclick = function(){
+      s.page = parseInt(btn.getAttribute('data-page'), 10);
+      rerender();
+      window.scrollTo(0, 0);
+    };
+  });
+}
+function pageSlice(arr, s){
+  var pages = Math.max(1, Math.ceil(arr.length / PAGE_SIZE));
+  if (s.page > pages) s.page = pages;
+  if (s.page < 1) s.page = 1;
+  return arr.slice((s.page - 1) * PAGE_SIZE, s.page * PAGE_SIZE);
+}
+function chipHTML(t){ return '<span class="chip">' + esc(t) + '</span>'; }
+function tagList(tags){ return (tags || []).map(chipHTML).join(''); }
+
+/* ================= 弹窗 ================= */
+function confirmDialog(opt){
+  var root = $('#modal-root');
+  root.innerHTML = '<div class="overlay" id="dlgOverlay"><div class="dialog" role="dialog" aria-modal="true">' +
+    '<h3>' + esc(opt.title) + '</h3>' +
+    '<div>' + (opt.body || '') + '</div>' +
+    '<div class="btnrow"><button id="dlgCancel">取消</button>' +
+    '<button id="dlgOk" class="' + (opt.danger ? 'danger' : 'primary') + '">' + esc(opt.ok || '确认') + '</button></div>' +
+    '</div></div>';
+  $('#dlgCancel').onclick = closeDialogs;
+  $('#dlgOverlay').onclick = function(e){ if (e.target === $('#dlgOverlay')) closeDialogs(); };
+  $('#dlgOk').onclick = function(){ closeDialogs(); if (opt.onOk) opt.onOk(); };
+}
+function reasonDialog(onSubmit){
+  var root = $('#modal-root');
+  root.innerHTML = '<div class="overlay" id="dlgOverlay"><div class="dialog" role="dialog" aria-modal="true">' +
+    '<h3>驳回原因</h3><p class="muted small">驳回理由必填，提交编辑可看到完整内容。</p>' +
+    '<textarea id="reasonText" rows="4" style="width:100%" placeholder="请说明需要修改的问题"></textarea>' +
+    '<div class="btnrow"><button id="dlgCancel">取消</button><button class="danger" id="dlgReject">确认驳回</button></div>' +
+    '</div></div>';
+  $('#dlgCancel').onclick = closeDialogs;
+  $('#dlgOverlay').onclick = function(e){ if (e.target === $('#dlgOverlay')) closeDialogs(); };
+  $('#dlgReject').onclick = function(){
+    var v = $('#reasonText').value.trim();
+    if (!v){ toast('请填写驳回原因'); return; }
+    closeDialogs(); onSubmit(v);
+  };
+}
+function closeDialogs(){ $('#modal-root').innerHTML = ''; }
+
+/* ---- 审批预览 ---- */
+function previewMetaRows(p){
+  var m = p.meta || {};
+  var rows = [['相机', m.camera], ['镜头', m.lens], ['焦距', m.focal], ['光圈', m.aperture], ['快门', m.shutter], ['ISO', m.iso]];
+  return rows.filter(function(x){ return x[1]; }).map(function(x){
+    return '<div class="meta-row"><span class="muted">' + x[0] + '</span><span>' + esc(x[1]) + '</span></div>';
+  }).join('');
+}
+function reviewPreviewHTML(r, mode){
+  if (r.type === '文章'){
+    var note = mode === 'public' ? '<div class="notice">当前公开的旧版本，仅用于对比。</div>' : '';
+    return '<h1 style="margin-top:0">' + esc(r.title) + '</h1>' +
+      '<p class="muted small">提交人 ' + esc(r.submitter) + ' · ' + r.at + ' · ' + (mode === 'public' ? '当前公开版' : '提交版') + '</p>' + note +
+      '<div class="article-body">' + articleBody({ title: r.title, id: 'pv' + r.id }) + '</div>';
+  }
+  if (r.type === '相册'){
+    var al = albums.filter(function(a){ return a.title === r.title; })[0] || albums[0];
+    var ps = photos.filter(function(p){ return p.albumId === al.id; }).slice(0, 8);
+    return '<h1 style="margin-top:0">' + esc(al.title) + '</h1><p class="muted">' + esc(al.desc) + '</p>' +
+      '<div>' + tagList(al.tags) + '</div>' +
+      '<p class="muted small">' + al.photos.length + ' 张 · 最近更新 ' + al.latestAt + ' · ' + esc(locText(al.location) || '未记录位置') + '</p>' +
+      '<div class="waterfall">' + ps.map(function(p){
+        return '<div class="wf-item"><div class="thumb" style="' + thumbStyle(p.id, p.ratio) + '">' + esc(p.title) + '</div></div>';
+      }).join('') + '</div><p class="muted small">预览使用公开衍生图，不加载原图。</p>';
+  }
+  var ph = photos[3];
+  return '<h1 style="margin-top:0">' + esc(r.title) + '</h1>' +
+    '<div class="zoom-stage short" id="pvZoom">' +
+      '<div class="zoom-inner" data-ratio="' + ratioNum(ph.ratio) + '" style="' + thumbStyle(ph.id, ph.ratio) + '">' + esc(ph.title) + '</div>' +
+      '<div class="zoom-tip">滚轮缩放 · 拖动查看 · 双击复位</div>' +
+    '</div>' +
+    '<p style="margin-top:12px">' + esc(ph.desc || '暂无描述') + '</p>' + previewMetaRows(ph) +
+    '<div class="meta-row"><span class="muted">位置</span><span>' + esc(locText(ph.location) || '未记录') + '</span></div>' +
+    '<p class="muted small">预览使用公开衍生图，不加载原图，也不展示未获准公开的元数据。</p>';
+}
+function openReviewPreview(r){
+  var mode = 'submit';
+  function paint(){
+    var tabs = r.kind === '修改'
+      ? '<div class="tabs"><button class="chip ' + (mode === 'submit' ? 'on' : '') + '" id="pvSubmit">提交版</button>' +
+        '<button class="chip ' + (mode === 'public' ? 'on' : '') + '" id="pvPublic">当前公开版</button></div>'
+      : '';
+    $('#modal-root').innerHTML = '<div class="overlay" id="pvOverlay"><div class="preview-panel" role="dialog" aria-modal="true" aria-label="内容预览">' +
+      '<div class="row" style="justify-content:space-between"><h3 style="margin:0">内容预览</h3><button id="pvClose">关闭</button></div>' + tabs +
+      '<div style="margin-top:8px">' + reviewPreviewHTML(r, mode) + '</div></div></div>';
+    bindCodeCopy($('#modal-root'));
+    initZoom($('#pvZoom'));
+    $('#pvClose').onclick = closeDialogs;
+    $('#pvOverlay').onclick = function(e){ if (e.target === $('#pvOverlay')) closeDialogs(); };
+    if ($('#pvSubmit')) $('#pvSubmit').onclick = function(){ mode = 'submit'; paint(); };
+    if ($('#pvPublic')) $('#pvPublic').onclick = function(){ mode = 'public'; paint(); };
+  }
+  r.viewed = true;
+  var badge = document.getElementById('pvbadge_' + r.id);
+  if (badge) badge.textContent = '已预览';
+  paint();
+}
+
+/* ================= 照片详情弹窗 ================= */
+var lastPhotoFocus = null;
+var photoModalList = [];
+var photoModalIndex = 0;
+function openPhoto(list, index){
+  if (!list.length) return;
+  lastPhotoFocus = document.activeElement;
+  photoModalList = list;
+  photoModalIndex = index;
+  paintPhoto();
+  document.addEventListener('keydown', photoKeys);
+  document.body.style.overflow = 'hidden';
+}
+function photoKeys(e){
+  if (e.key === 'Escape') closePhoto();
+  if (e.key === 'ArrowLeft') stepPhoto(-1);
+  if (e.key === 'ArrowRight') stepPhoto(1);
+}
+function stepPhoto(delta){
+  var next = photoModalIndex + delta;
+  if (next < 0 || next >= photoModalList.length) return;
+  photoModalIndex = next;
+  paintPhoto();
+}
+function closePhoto(){
+  var root = $('#modal-root');
+  if (!root.querySelector('#photoOverlay')) return;
+  root.innerHTML = '';
+  document.removeEventListener('keydown', photoKeys);
+  document.body.style.overflow = '';
+  if (lastPhotoFocus && lastPhotoFocus.focus) lastPhotoFocus.focus();
+}
+function ratioNum(r){
+  var parts = String(r).split('/');
+  var w = parseFloat(parts[0]) || 3;
+  var h = parseFloat(parts[1]) || 2;
+  return w / h;
+}
+function initZoom(stage){
+  if (!stage) return;
+  var inner = stage.querySelector('.zoom-inner');
+  var ratio = parseFloat(inner.getAttribute('data-ratio')) || 1.5;
+  var s = 1, x = 0, y = 0;
+  function baseSize(){
+    var W = stage.clientWidth, H = stage.clientHeight;
+    var w = W * 0.94, h = w / ratio;
+    if (h > H * 0.94){ h = H * 0.94; w = h * ratio; }
+    inner.style.width = w + 'px';
+    inner.style.height = h + 'px';
+  }
+  function clamp(){
+    var W = stage.clientWidth, H = stage.clientHeight;
+    var maxX = Math.max(0, (inner.offsetWidth * s - W) / 2);
+    var maxY = Math.max(0, (inner.offsetHeight * s - H) / 2);
+    x = Math.max(-maxX, Math.min(maxX, x));
+    y = Math.max(-maxY, Math.min(maxY, y));
+  }
+  function apply(){
+    inner.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
+  }
+  function zoomAt(factor, cx, cy){
+    var ns = Math.max(1, Math.min(6, s * factor));
+    if (Math.abs(ns - s) < 0.001) return;
+    var rect = stage.getBoundingClientRect();
+    var px = (cx == null ? rect.width / 2 : cx - rect.left) - rect.width / 2;
+    var py = (cy == null ? rect.height / 2 : cy - rect.top) - rect.height / 2;
+    x = px - (px - x) * (ns / s);
+    y = py - (py - y) * (ns / s);
+    s = ns; clamp(); apply();
+  }
+  baseSize(); apply();
+  stage.addEventListener('wheel', function(e){
+    e.preventDefault();
+    zoomAt(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX, e.clientY);
+  }, { passive:false });
+  var dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+  stage.addEventListener('pointerdown', function(e){
+    if (e.target.closest('.zoom-nav')) return;
+    dragging = true; sx = e.clientX; sy = e.clientY; ox = x; oy = y;
+    stage.classList.add('dragging');
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener('pointermove', function(e){
+    if (!dragging) return;
+    x = ox + (e.clientX - sx); y = oy + (e.clientY - sy);
+    clamp(); apply();
+  });
+  function endDrag(){ dragging = false; stage.classList.remove('dragging'); }
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
+  stage.addEventListener('dblclick', function(e){
+    if (e.target.closest('.zoom-nav')) return;
+    s = 1; x = 0; y = 0; apply();
+  });
+}
+function locText(loc){
+  if (!loc) return '';
+  var parts = [loc.country, loc.province, loc.city, loc.district, loc.town, loc.street, loc.place];
+  return parts.filter(function(x){ return x; }).join(' · ');
+}
+function paintPhoto(){
+  var p = photoModalList[photoModalIndex];
+  if (!p) return;
+  var metaRows = '';
+  var m = p.meta || {};
+  var rows = [['相机', m.camera], ['镜头', m.lens], ['焦距', m.focal], ['光圈', m.aperture], ['快门', m.shutter], ['ISO', m.iso]];
+  rows.forEach(function(r){
+    if (r[1]) metaRows += '<div class="meta-row"><span class="muted">' + r[0] + '</span><span>' + esc(r[1]) + '</span></div>';
+  });
+  var loc = locText(p.location);
+  var root = $('#modal-root');
+  root.innerHTML = '<div class="overlay" id="photoOverlay"><div class="lightbox" role="dialog" aria-modal="true" aria-label="照片详情" tabindex="-1">' +
+    '<div class="zoom-stage" id="lbZoom">' +
+      '<div class="zoom-inner" data-ratio="' + ratioNum(p.ratio) + '" style="' + thumbStyle(p.id, p.ratio) + '">' + esc(p.title) + '</div>' +
+      '<button class="zoom-nav prev" id="lbPrev" aria-label="上一张"' + (photoModalIndex === 0 ? ' disabled' : '') + '>‹</button>' +
+      '<button class="zoom-nav next" id="lbNext" aria-label="下一张"' + (photoModalIndex === photoModalList.length - 1 ? ' disabled' : '') + '>›</button>' +
+      '<div class="zoom-tip">滚轮缩放 · 拖动查看 · 双击复位</div>' +
+    '</div>' +
+    '<div class="lb-info">' +
+      '<button class="lb-close" id="lbClose">关闭</button>' +
+      '<h3 style="margin-top:0">' + esc(p.title) + '</h3>' +
+      '<p class="muted">' + esc(p.desc || '暂无描述') + '</p>' +
+      '<div class="meta-row"><span class="muted">拍摄时间</span><span>' + esc(p.shotAt) + '</span></div>' +
+      metaRows +
+      '<div class="meta-row"><span class="muted">位置</span><span>' + esc(loc || '未记录') + '</span></div>' +
+      '<p class="muted small" style="margin-top:14px">' + (photoModalIndex + 1) + ' / ' + photoModalList.length + ' · 按 Esc 关闭，方向键切换</p>' +
+    '</div>' +
+  '</div></div>';
+  initZoom($('#lbZoom'));
+  $('#lbClose').onclick = closePhoto;
+  $('#photoOverlay').onclick = function(e){ if (e.target === $('#photoOverlay')) closePhoto(); };
+  $('#lbPrev').onclick = function(){ stepPhoto(-1); };
+  $('#lbNext').onclick = function(){ stepPhoto(1); };
+  var lb = document.querySelector('#photoOverlay .lightbox');
+  if (lb) lb.focus({ preventScroll:true });
+}
+
+/* ================= 通用头部 ================= */
+function parseHash(){
+  return location.hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
+}
+function renderHeader(){
+  var p = parseHash()[0] || '';
+  var roleName = { visitor:'访客', editor:'编辑', admin:'管理员' }[state.role];
+  var top = $('#topbar');
+  var html = '<div class="wrap nav">' +
+    '<a class="brand" href="#/">文影集 · 原型</a>' +
+    '<a href="#/" class="' + (p === '' ? 'on' : '') + '">首页</a>' +
+    '<a href="#/articles" class="' + (p === 'articles' ? 'on' : '') + '">文章</a>' +
+    '<a href="#/photos" class="' + (p === 'photos' ? 'on' : '') + '">摄影</a>';
+  if (state.role !== 'visitor') html += '<a href="#/editor" class="' + (p === 'editor' ? 'on' : '') + '">工作区</a>';
+  if (state.role === 'admin') html += '<a href="#/admin/review" class="' + (p === 'admin' ? 'on' : '') + '">管理后台</a>';
+  html += '<span style="flex:1"></span>' +
+    '<span class="muted small">' + roleName + '</span>' +
+    '<a class="chip" href="#/login">切换身份</a>' +
+    '<button id="themeBtn">' + (state.theme === 'dark' ? '浅色' : '深色') + '</button>' +
+    '</div>';
+  top.innerHTML = html;
+  $('#themeBtn').onclick = function(){
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = state.theme;
+    localStorage.setItem('proto_theme', state.theme);
+    renderHeader();
+  };
+}
+function denied(roleName){
+  return '<h1>无法访问</h1><div class="notice">当前身份没有' + roleName + '权限。<a href="#/login">切换身份</a></div>';
+}
+
+/* ================= 首页 ================= */
+function pickRecommend(kind){
+  var n = kind === 'article' ? homeCfg.nA : homeCfg.nB;
+  var manual = kind === 'article' ? homeCfg.a : homeCfg.b;
+  var pool = kind === 'article'
+    ? articles.slice().sort(function(a, b){ return b.updatedAt.localeCompare(a.updatedAt); })
+    : albums.filter(function(al){ return al.photos.length > 0; }).slice().sort(function(a, b){ return b.latestAt.localeCompare(a.latestAt); });
+  var out = [];
+  manual.forEach(function(id){
+    var hit = pool.filter(function(x){ return x.id === id; })[0];
+    if (hit && out.indexOf(hit) === -1) out.push(hit);
+  });
+  pool.forEach(function(x){
+    if (out.length < n && out.indexOf(x) === -1) out.push(x);
+  });
+  return out.slice(0, n);
+}
+function renderHome(){
+  var recA = pickRecommend('article');
+  var recB = pickRecommend('album');
+  var html = '<section style="padding:28px 0 8px"><h1 style="font-size:32px">记录走过的路，也记录写过的东西</h1>' +
+    '<p class="muted">文章与摄影作品展示网站的功能原型。这里的链接、筛选、分页和弹窗都可以实际操作。</p>' +
+    '<div class="btnrow"><a class="chip" href="#/articles">进入文章</a><a class="chip" href="#/photos">进入摄影</a></div></section>';
+  html += '<h2>推荐文章</h2>';
+  html += recA.length ? '<div class="grid">' + recA.map(articleCard).join('') + '</div>' : '<div class="notice">暂无公开文章</div>';
+  html += '<h2>推荐相册</h2>';
+  html += recB.length ? '<div class="grid">' + recB.map(albumCard).join('') + '</div>' : '<div class="notice">暂无公开相册</div>';
+  $('#app').innerHTML = html;
+}
+function articleCard(a){
+  return '<a class="card" href="#/articles/post/' + a.id + '">' +
+    '<div class="thumb" style="' + thumbStyle(a.id, '16 / 9') + '">文章封面</div>' +
+    '<h3>' + esc(a.title) + '</h3><p class="muted small">' + esc(a.summary) + '</p>' +
+    '<div>' + tagList(a.tags) + '</div>' +
+    '<div class="muted small">发布 ' + a.publishedAt + ' · 更新 ' + a.updatedAt + '</div></a>';
+}
+function albumCard(al){
+  var loc = locText(al.location);
+  return '<a class="card" href="#/photos/album/' + al.id + '">' +
+    '<div class="thumb" style="' + thumbStyle(al.id, '16 / 9') + '">相册封面</div>' +
+    '<h3>' + esc(al.title) + '</h3><p class="muted small">' + esc(al.desc) + '</p>' +
+    '<div>' + tagList(al.tags) + '</div>' +
+    '<div class="muted small">' + al.photos.length + ' 张 · 更新 ' + al.latestAt + (loc ? ' · ' + esc(loc) : '') + '</div></a>';
+}
+
+/* ================= 文章专栏列表 ================= */
+var SORT_ACOL = [['updated','最近更新'],['count','文章数从多到少']];
+function renderArticleCols(){
+  var s = LS('acol', 'updated');
+  function draw(){
+    var items = acols.filter(function(c){
+      return matchQ(c.name + ' ' + c.desc, s) && matchTags(c, s) && matchDate(c.createdAt, s);
+    });
+    if (s.sort === 'count') items.sort(function(a, b){ return b.articleCount - a.articleCount; });
+    else items.sort(function(a, b){ return b.updatedAt.localeCompare(a.updatedAt); });
+    var pageItems = pageSlice(items, s);
+    var html = '<h1>文章专栏</h1><p class="muted">按主题长期维护的专栏，共 ' + items.length + ' 个符合条件。</p>' +
+      controlsHTML(s, SORT_ACOL, ARTICLE_TAGS);
+    html += pageItems.length ? '<div class="grid">' + pageItems.map(articleColCard).join('') + '</div>'
+      : '<div class="notice">没有找到匹配内容。<button id="emptyReset">重置条件</button></div>';
+    html += pagerHTML(items.length, s.page);
+    $('#app').innerHTML = html;
+    bindControls(s, draw); bindPager(s, draw);
+    var er = $('#emptyReset');
+    if (er) er.onclick = function(){ s.q = ''; s.tags = []; s.from = ''; s.to = ''; s.page = 1; draw(); };
+  }
+  draw();
+}
+function articleColCard(c){
+  return '<a class="card" href="#/articles/col/' + c.id + '">' +
+    '<div class="thumb" style="' + thumbStyle(c.id, '16 / 9') + '">封面</div>' +
+    '<h3>' + esc(c.name) + '</h3><p class="muted small">' + esc(c.desc) + '</p>' +
+    '<div>' + tagList(c.tags) + '</div>' +
+    '<div class="muted small">' + c.articleCount + ' 篇文章 · 创建 ' + c.createdAt + '</div></a>';
+}
+
+/* ================= 文章列表 ================= */
+var SORT_ALIST = [['new','最新发布'],['old','最早发布']];
+function renderArticleList(colId){
+  var col = acols.filter(function(c){ return c.id === colId; })[0];
+  if (!col) return renderNotFound();
+  var s = LS('alist_' + colId, 'new');
+  function draw(){
+    var items = articles.filter(function(a){
+      return a.colId === colId && matchQ(a.title + ' ' + a.summary, s) && matchTags(a, s) && matchDate(a.publishedAt, s);
+    });
+    items.sort(function(a, b){ return s.sort === 'new' ? b.publishedAt.localeCompare(a.publishedAt) : a.publishedAt.localeCompare(b.publishedAt); });
+    var pageItems = pageSlice(items, s);
+    var html = '<p class="small"><a href="#/articles">文章专栏</a> / ' + esc(col.name) + '</p>' +
+      '<h1>' + esc(col.name) + '</h1><p class="muted">' + esc(col.desc) + '</p><div>' + tagList(col.tags) + '</div>' +
+      '<p class="muted small">共 ' + items.length + ' 篇符合条件的文章</p>' + controlsHTML(s, SORT_ALIST, ARTICLE_TAGS);
+    html += pageItems.length ? '<div class="grid">' + pageItems.map(articleCard).join('') + '</div>'
+      : '<div class="notice">没有找到匹配内容。 <button id="emptyReset">重置条件</button></div>';
+    html += pagerHTML(items.length, s.page);
+    $('#app').innerHTML = html;
+    bindControls(s, draw); bindPager(s, draw);
+    var er = $('#emptyReset');
+    if (er) er.onclick = function(){ s.q = ''; s.tags = []; s.from = ''; s.to = ''; s.page = 1; draw(); };
+  }
+  draw();
+}
+
+/* ================= 文章详情 ================= */
+var pageCleanup = null;
+function renderArticleDetail(id){
+  var a = articles.filter(function(x){ return x.id === id; })[0];
+  if (!a) return renderNotFound();
+  var col = acols.filter(function(c){ return c.id === a.colId; })[0];
+  $('#app').innerHTML = '<p class="small"><a href="#/articles">文章专栏</a> / <a href="#/articles/col/' + col.id + '">' + esc(col.name) + '</a> / 正文</p>' +
+    '<div class="article-layout"><article class="article-body">' +
+    '<h1>' + esc(a.title) + '</h1>' +
+    '<p class="muted small">发布 ' + a.publishedAt + ' · 更新 ' + a.updatedAt + '</p><div>' + tagList(a.tags) + '</div>' +
+    articleBody(a) +
+    '</article><aside class="toc" id="toc"></aside></div>';
+  bindCodeCopy($('#app'));
+  var heads = Array.prototype.slice.call(document.querySelectorAll('.article-body h2, .article-body h3'));
+  var toc = $('#toc');
+  toc.innerHTML = '<div class="muted small" style="margin-bottom:6px">目录</div>' + heads.map(function(h){
+    return '<button class="toclink ' + (h.tagName === 'H3' ? 'sub' : '') + '" data-target="' + h.id + '">' + esc(h.textContent) + '</button>';
+  }).join('');
+  Array.prototype.forEach.call(toc.querySelectorAll('.toclink'), function(b){
+    b.onclick = function(){
+      var t = document.getElementById(b.getAttribute('data-target'));
+      if (t) t.scrollIntoView({ behavior:'smooth', block:'start' });
+    };
+  });
+  function onScroll(){
+    var cur = heads[0];
+    heads.forEach(function(h){ if (h.getBoundingClientRect().top <= 100) cur = h; });
+    Array.prototype.forEach.call(toc.querySelectorAll('.toclink'), function(b){
+      b.classList.toggle('active', cur && b.getAttribute('data-target') === cur.id);
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  onScroll();
+  pageCleanup = function(){ window.removeEventListener('scroll', onScroll); };
+}
+var CODE_LANGS = {
+  js:'JavaScript', javascript:'JavaScript', ts:'TypeScript', typescript:'TypeScript',
+  py:'Python', python:'Python', sh:'Shell', bash:'Shell', shell:'Shell',
+  json:'JSON', html:'HTML', css:'CSS', sql:'SQL', cpp:'C++', c:'C',
+  java:'Java', go:'Go', rust:'Rust', md:'Markdown', markdown:'Markdown',
+  yml:'YAML', yaml:'YAML', text:'代码'
+};
+function codeBlockHTML(lang, code){
+  var key = String(lang || '').toLowerCase();
+  var label = CODE_LANGS[key] || '代码';
+  return '<div class="code-block" data-lang="' + esc(key) + '">' +
+    '<div class="code-head"><span class="code-lang">' + esc(label) + '</span>' +
+    '<button class="code-copy" type="button" aria-label="复制代码" aria-live="polite">复制</button></div>' +
+    '<pre><code>' + esc(code) + '</code></pre></div>';
+}
+function fallbackCopy(text){
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.cssText = 'position:fixed;top:-1000px;left:-1000px;opacity:0';
+  document.body.appendChild(ta);
+  ta.select();
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+function copyText(text, done){
+  if (navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(fallbackCopy(text)); });
+  } else {
+    done(fallbackCopy(text));
+  }
+}
+function bindCodeCopy(root){
+  Array.prototype.forEach.call((root || document).querySelectorAll('.code-copy'), function(btn){
+    btn.onclick = function(){
+      var block = btn.closest('.code-block');
+      var code = block && block.querySelector('code');
+      if (!code) return;
+      copyText(code.textContent, function(ok){
+        btn.textContent = ok ? '已复制' : '复制失败';
+        btn.classList.toggle('ok', ok);
+        clearTimeout(btn._copyTimer);
+        btn._copyTimer = setTimeout(function(){ btn.textContent = '复制'; btn.classList.remove('ok'); }, 1600);
+      });
+    };
+  });
+}
+function articleBody(a){
+  var secs = ['为什么写这篇','遇到的问题','具体做法','数据与结果','还没做完的事'];
+  var h = '';
+  secs.forEach(function(title, i){
+    h += '<h2 id="s' + i + '">' + (i + 1) + '. ' + title + '</h2>';
+    h += '<p>围绕「' + esc(a.title) + '」，这一段是第 ' + (i + 1) + ' 节的示例正文，用来验证字号、行高和目录定位。再补充一些文字，让段落长度接近真实文章。</p>';
+    if (i === 0){
+      h += '<h3 id="s0-1">1.1 场景说明</h3><p>子章节示例，用于验证三级标题也会进入目录。</p>';
+      h += '<div class="figure" style="' + thumbStyle(a.id + 'fig', '16 / 9') + '">正文图片（衍生图占位）</div>';
+    }
+    if (i === 1) h += codeBlockHTML('js', 'function demo() {\n  return "code block";\n}');
+    if (i === 2) h += '<p>行内公式示例：E = mc²。独立公式如下：</p><div class="formula">a² + b² = c²</div>';
+    if (i === 3) h += '<div class="mermaid">Mermaid 图示占位：A → B → C</div>';
+    if (i === 4) h += '<p>参考链接：<a href="https://example.com" target="_blank" rel="noopener">示例外部链接</a></p><blockquote>这是一段引用。</blockquote><ul><li>要点一</li><li>要点二</li></ul>';
+  });
+  return h;
+}
+
+/* ================= 摄影专栏列表 ================= */
+var SORT_PCOL = [['updated','最近更新'],['count','相册数从多到少']];
+function renderPhotoCols(){
+  var s = LS('pcol', 'updated');
+  var genre = '';
+  function draw(){
+    var items = pcols.filter(function(c){
+      return matchQ(c.name + ' ' + c.desc, s) && matchTags(c, s) && matchDate(c.createdAt, s) && (!genre || c.genre === genre);
+    });
+    if (s.sort === 'count') items.sort(function(a, b){ return b.albumCount - a.albumCount; });
+    else items.sort(function(a, b){ return b.updatedAt.localeCompare(a.updatedAt); });
+    var pageItems = pageSlice(items, s);
+    var genreHtml = '<div class="toolbar"><span class="muted small">题材</span>' +
+      ['','街拍','自然风光','城市风光'].map(function(g){
+        return '<button class="chip ' + (genre === g ? 'on' : '') + '" data-genre="' + g + '">' + (g || '全部') + '</button>';
+      }).join('') + '</div>';
+    var html = '<h1>摄影专栏</h1><p class="muted">共 ' + items.length + ' 个符合条件。</p>' + genreHtml + controlsHTML(s, SORT_PCOL, PHOTO_TAGS);
+    html += pageItems.length ? '<div class="grid">' + pageItems.map(photoColCard).join('') + '</div>'
+      : '<div class="notice">没有找到匹配内容。</div>';
+    html += pagerHTML(items.length, s.page);
+    $('#app').innerHTML = html;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-genre]'), function(b){
+      b.onclick = function(){ genre = b.getAttribute('data-genre'); s.page = 1; draw(); };
+    });
+    bindControls(s, draw); bindPager(s, draw);
+  }
+  draw();
+}
+function photoColCard(c){
+  return '<a class="card" href="#/photos/col/' + c.id + '">' +
+    '<div class="thumb" style="' + thumbStyle(c.id, '16 / 9') + '">封面</div>' +
+    '<h3>' + esc(c.name) + '</h3><p class="muted small">' + esc(c.desc) + '</p>' +
+    '<div><span class="chip on">' + esc(c.genre) + '</span>' + tagList(c.tags) + '</div>' +
+    '<div class="muted small">' + c.albumCount + ' 个相册 · 创建 ' + c.createdAt + '</div></a>';
+}
+
+/* ================= 相册列表 ================= */
+var SORT_ALBUM = [['new','最新更新'],['count','照片数从多到少']];
+function renderAlbumList(colId){
+  var col = pcols.filter(function(c){ return c.id === colId; })[0];
+  if (!col) return renderNotFound();
+  var s = LS('album_' + colId, 'new');
+  function draw(){
+    var items = albums.filter(function(al){
+      return al.colId === colId && matchQ(al.title + ' ' + al.desc + ' ' + locText(al.location), s) && matchTags(al, s) && matchDate(al.latestAt, s);
+    });
+    items.sort(function(a, b){ return s.sort === 'new' ? b.latestAt.localeCompare(a.latestAt) : b.photos.length - a.photos.length; });
+    var pageItems = pageSlice(items, s);
+    var html = '<p class="small"><a href="#/photos">摄影专栏</a> / ' + esc(col.name) + '</p>' +
+      '<h1>' + esc(col.name) + '</h1><p class="muted">' + esc(col.desc) + '</p>' +
+      '<div><span class="chip on">' + esc(col.genre) + '</span>' + tagList(col.tags) + '</div>' +
+      '<p class="muted small">共 ' + items.length + ' 个符合条件的相册</p>' + controlsHTML(s, SORT_ALBUM, PHOTO_TAGS);
+    html += pageItems.length ? '<div class="grid">' + pageItems.map(albumCard).join('') + '</div>'
+      : '<div class="notice">没有找到匹配内容。</div>';
+    html += pagerHTML(items.length, s.page);
+    $('#app').innerHTML = html;
+    bindControls(s, draw); bindPager(s, draw);
+  }
+  draw();
+}
+
+/* ================= 相册详情（瀑布流） ================= */
+var SORT_PHOTO = [['new','拍摄时间从新到旧'],['old','拍摄时间从旧到新']];
+function renderAlbumDetail(id){
+  var al = albums.filter(function(x){ return x.id === id; })[0];
+  if (!al) return renderNotFound();
+  var col = pcols.filter(function(c){ return c.id === al.colId; })[0];
+  var s = LS('photo_' + id, 'new');
+  function filtered(){
+    var items = photos.filter(function(p){
+      return p.albumId === id && matchQ(p.title + ' ' + p.desc + ' ' + locText(p.location), s) && matchTags(p, s) && matchDate(p.shotAt, s);
+    });
+    items.sort(function(a, b){ return s.sort === 'new' ? b.shotAt.localeCompare(a.shotAt) : a.shotAt.localeCompare(b.shotAt); });
+    return items;
+  }
+  function draw(){
+    var items = filtered();
+    var pageItems = pageSlice(items, s);
+    var html = '<p class="small"><a href="#/photos">摄影专栏</a> / <a href="#/photos/col/' + col.id + '">' + esc(col.name) + '</a> / ' + esc(al.title) + '</p>' +
+      '<h1>' + esc(al.title) + '</h1><p class="muted">' + esc(al.desc) + '</p>' +
+      '<div>' + tagList(al.tags) + '</div>' +
+      '<p class="muted small">创建 ' + al.createdAt + ' · 最近更新 ' + al.latestAt + ' · ' + al.photos.length + ' 张 · ' + esc(locText(al.location) || '未记录位置') + '</p>' +
+      controlsHTML(s, SORT_PHOTO, PHOTO_TAGS);
+    if (pageItems.length){
+      html += '<div class="waterfall">' + pageItems.map(function(p){
+        return '<div class="wf-item" data-pid="' + p.id + '" tabindex="0" role="button" aria-label="查看 ' + esc(p.title) + '">' +
+          '<div class="thumb" style="' + thumbStyle(p.id, p.ratio) + '">' + esc(p.title) + '</div></div>';
+      }).join('') + '</div>';
+    } else {
+      html += '<div class="notice">没有找到匹配照片。</div>';
+    }
+    html += pagerHTML(items.length, s.page);
+    $('#app').innerHTML = html;
+    bindControls(s, draw); bindPager(s, draw);
+    function openByEl(el){
+      var list = filtered();
+      var idx = -1;
+      list.forEach(function(p, i){ if (p.id === el.getAttribute('data-pid')) idx = i; });
+      if (idx > -1) openPhoto(list, idx);
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('.wf-item'), function(el){
+      el.onclick = function(){ openByEl(el); };
+      el.onkeydown = function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openByEl(el); } };
+    });
+  }
+  draw();
+}
+
+/* ================= 登录 ================= */
+function renderLogin(){
+  $('#app').innerHTML = '<h1>切换身份（原型）</h1>' +
+    '<p class="muted">正式版本使用用户名和密码登录，账号由管理员创建。原型直接切换身份，便于检查不同权限下的页面。</p>' +
+    '<div class="grid">' +
+      roleCard('visitor', '访客', '未登录或没有编辑权限，只能浏览公开内容。') +
+      roleCard('editor', '编辑', '管理本人内容，提交后需管理员审批。') +
+      roleCard('admin', '管理员', '全站内容、审批、账号、推荐和回收站。') +
+    '</div>' +
+    '<div class="notice">提示：管理员账号在正式版本中只能在服务器添加，本页仅用于原型演示。</div>';
+  Array.prototype.forEach.call(document.querySelectorAll('[data-role]'), function(b){
+    b.onclick = function(){
+      state.role = b.getAttribute('data-role');
+      localStorage.setItem('proto_role', state.role);
+      toast('已切换为' + ({ visitor:'访客', editor:'编辑', admin:'管理员' }[state.role]));
+      var target = state.role === 'admin' ? '#/admin/review' : (state.role === 'editor' ? '#/editor' : '#/');
+      if (location.hash === target) router(); else location.hash = target;
+    };
+  });
+}
+function roleCard(role, name, desc){
+  return '<div class="card"><h3>' + name + '</h3><p class="muted small">' + desc + '</p>' +
+    '<button class="primary" data-role="' + role + '">以' + name + '身份进入</button></div>';
+}
+
+/* ================= 编辑工作区 ================= */
+function myItems(){
+  var list = [];
+  articles.slice(0, 5).forEach(function(a){ list.push({ id:a.id, type:'文章', title:a.title, updated:a.updatedAt }); });
+  albums.slice(0, 3).forEach(function(al){ list.push({ id:al.id, type:'相册', title:al.title, updated:al.latestAt }); });
+  return list;
+}
+function renderEditor(){
+  if (state.role === 'visitor'){ $('#app').innerHTML = denied('编辑'); return; }
+  var list = myItems();
+  var rows = list.map(function(it){
+    var st = myStatus[it.id] || '已发布';
+    return '<tr><td>' + it.type + '</td><td>' + esc(it.title) + '</td><td>' + it.updated + '</td>' +
+      '<td><span class="status">' + st + '</span></td>' +
+      '<td>' + (st === '待审核' ? '<span class="muted small">等待管理员处理</span>' : '<button data-submit="' + it.id + '">提交审核</button>') + '</td></tr>';
+  }).join('');
+  $('#app').innerHTML = '<h1>我的内容</h1><p class="muted">编辑只能管理本人创建或上传的内容，新增和修改都需要管理员审批。</p>' +
+    '<div class="table-wrap"><table><thead><tr><th>类型</th><th>标题</th><th>更新时间</th><th>状态</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+    '<h2>我的审核记录</h2><div class="notice">驳回理由会显示在这里，并可从记录进入对应内容继续修改。</div>';
+  Array.prototype.forEach.call(document.querySelectorAll('[data-submit]'), function(b){
+    b.onclick = function(){
+      var id = b.getAttribute('data-submit');
+      myStatus[id] = '待审核';
+      var item = list.filter(function(x){ return x.id === id; })[0];
+      reviews.unshift({ id:'rv' + Date.now(), type:item.type, title:item.title, submitter:'editor_lin', at:'2026-11-18 10:30', kind:'修改', status:'待审核' });
+      toast('已提交审核，公开旧版继续展示');
+      renderEditor();
+    };
+  });
+}
+
+/* ================= 管理员页面 ================= */
+function adminTabs(active){
+  var tabs = [['#/admin/review','审批中心'],['#/admin/content','内容管理'],['#/admin/home','首页推荐'],['#/admin/users','账号权限'],['#/admin/recycle','回收站']];
+  return '<div class="tabs">' + tabs.map(function(t){
+    return '<a class="chip ' + (active === t[0] ? 'on' : '') + '" href="' + t[0] + '">' + t[1] + '</a>';
+  }).join('') + '</div>';
+}
+function renderReview(){
+  var rows = reviews.filter(function(r){ return r.status === '待审核'; }).map(function(r){
+    return '<tr><td>' + r.type + '</td><td>' + esc(r.title) + ' <span class="status" id="pvbadge_' + r.id + '">' + (r.viewed ? '已预览' : '未预览') + '</span></td>' +
+      '<td>' + esc(r.submitter) + '</td><td>' + r.kind + '</td><td>' + r.at + '</td>' +
+      '<td class="row"><button data-preview="' + r.id + '">预览</button><button class="primary" data-ok="' + r.id + '">通过</button><button class="danger" data-no="' + r.id + '">驳回</button></td></tr>';
+  }).join('');
+  $('#app').innerHTML = '<h1>审批中心</h1>' + adminTabs('#/admin/review') +
+    '<p class="muted">通过前请先预览完整内容，确认没有违规信息。首版不提供批量通过。</p>' +
+    (rows ? '<div class="table-wrap"><table><thead><tr><th>类型</th><th>标题</th><th>提交人</th><th>方式</th><th>提交时间</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+      : '<div class="notice">暂无待审核内容。</div>') +
+    '<h2>已处理记录</h2>' + (reviews.some(function(r){ return r.status !== '待审核'; })
+      ? '<div class="table-wrap"><table><thead><tr><th>标题</th><th>结果</th></tr></thead><tbody>' +
+        reviews.filter(function(r){ return r.status !== '待审核'; }).map(function(r){ return '<tr><td>' + esc(r.title) + '</td><td>' + r.status + '</td></tr>'; }).join('') +
+        '</tbody></table></div>' : '<div class="notice">还没有处理记录。</div>');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-preview]'), function(b){
+    b.onclick = function(){
+      var r = reviews.filter(function(x){ return x.id === b.getAttribute('data-preview'); })[0];
+      openReviewPreview(r);
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ok]'), function(b){
+    b.onclick = function(){
+      var id = b.getAttribute('data-ok');
+      var r = reviews.filter(function(x){ return x.id === id; })[0];
+      confirmDialog({ title:'确认通过', body:'<p>将公开「' + esc(r.title) + '」。若已有公开版本，将通过版本替换旧版。</p>', ok:'通过', onOk:function(){
+        r.status = '已通过'; toast('已通过并公开'); renderReview();
+      }});
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-no]'), function(b){
+    b.onclick = function(){
+      var id = b.getAttribute('data-no');
+      reasonDialog(function(reason){
+        var r = reviews.filter(function(x){ return x.id === id; })[0];
+        r.status = '已驳回'; r.reason = reason;
+        toast('已驳回，旧公开版本保持不变'); renderReview();
+      });
+    };
+  });
+}
+function renderAdminContent(){
+  var types = ['全部','文章','相册','照片'];
+  var statuses = ['全部','已发布','已下线'];
+  var rows = contentItems.filter(function(it){
+    return (adminContentState.type === '全部' || it.type === adminContentState.type) &&
+      (adminContentState.status === '全部' || it.status === adminContentState.status) &&
+      (!adminContentState.q || it.title.indexOf(adminContentState.q) > -1);
+  }).map(function(it){
+    return '<tr><td>' + it.type + '</td><td>' + esc(it.title) + '</td><td>' + esc(it.owner) + '</td>' +
+      '<td><span class="status">' + it.status + '</span></td><td>' + it.updated + '</td>' +
+      '<td class="row">' + (it.status === '已发布'
+        ? '<button data-offline="' + it.id + '">下线</button>'
+        : '<button data-restore="' + it.id + '">恢复公开</button>') +
+      '<button class="danger" data-remove="' + it.id + '">移入回收站</button></td></tr>';
+  }).join('');
+  $('#app').innerHTML = '<h1>全站内容管理</h1>' + adminTabs('#/admin/content') +
+    '<div class="tabs">' + types.map(function(t){ return '<button class="chip ' + (adminContentState.type === t ? 'on' : '') + '" data-type="' + t + '">' + t + '</button>'; }).join('') + '</div>' +
+    '<div class="toolbar"><input id="cq" placeholder="搜索标题" value="' + esc(adminContentState.q) + '">' +
+    '<select id="cs">' + statuses.map(function(st){ return '<option' + (adminContentState.status === st ? ' selected' : '') + '>' + st + '</option>'; }).join('') + '</select></div>' +
+    (rows ? '<div class="table-wrap"><table><thead><tr><th>类型</th><th>标题</th><th>所有者</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+      : '<div class="notice">没有匹配内容。</div>');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-type]'), function(b){
+    b.onclick = function(){ adminContentState.type = b.getAttribute('data-type'); renderAdminContent(); };
+  });
+  $('#cq').oninput = function(){ adminContentState.q = this.value.trim(); renderAdminContent(); };
+  $('#cs').onchange = function(){ adminContentState.status = this.value; renderAdminContent(); };
+  function find(id){ return contentItems.filter(function(x){ return x.id === id; })[0]; }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-offline]'), function(b){
+    b.onclick = function(){
+      var it = find(b.getAttribute('data-offline'));
+      confirmDialog({ title:'确认下线', body:'<p>「' + esc(it.title) + '」将立即从公开端隐藏，并同步影响其下级和首页推荐。</p>', ok:'下线', danger:true, onOk:function(){
+        it.status = '已下线'; toast('已下线'); renderAdminContent();
+      }});
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-restore]'), function(b){
+    b.onclick = function(){ find(b.getAttribute('data-restore')).status = '已发布'; toast('已恢复公开'); renderAdminContent(); };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-remove]'), function(b){
+    b.onclick = function(){
+      var it = find(b.getAttribute('data-remove'));
+      var album = albums.filter(function(a){ return a.id === it.id; })[0];
+      if (it.type === '相册' && album && album.photos.length){
+        toast('相册内仍有照片，请先处理下级内容'); return;
+      }
+      confirmDialog({ title:'移入回收站', body:'<p>「' + esc(it.title) + '」将从公开端隐藏，文件和记录暂时保留，可在回收站恢复。</p>', ok:'移入回收站', danger:true, onOk:function(){
+        contentItems = contentItems.filter(function(x){ return x.id !== it.id; });
+        recycleItems.push({ id:it.id, type:it.type, title:it.title, owner:it.owner, by:'管理员', at:'2026-11-18' });
+        toast('已移入回收站'); renderAdminContent();
+      }});
+    };
+  });
+}
+function renderAdminHome(){
+  function preview(kind){
+    var n = kind === 'a' ? homeCfg.nA : homeCfg.nB;
+    var manual = kind === 'a' ? homeCfg.a : homeCfg.b;
+    var pool = kind === 'a'
+      ? articles.slice().sort(function(a, b){ return b.updatedAt.localeCompare(a.updatedAt); })
+      : albums.slice().sort(function(a, b){ return b.latestAt.localeCompare(a.latestAt); });
+    var out = [];
+    manual.forEach(function(id){ var x = pool.filter(function(i){ return i.id === id; })[0]; if (x && out.indexOf(x) === -1) out.push(x); });
+    pool.forEach(function(x){ if (out.length < n && out.indexOf(x) === -1) out.push(x); });
+    return out.slice(0, n);
+  }
+  function section(kind, title){
+    var n = kind === 'a' ? homeCfg.nA : homeCfg.nB;
+    var manual = kind === 'a' ? homeCfg.a : homeCfg.b;
+    var pool = kind === 'a' ? articles.slice(0, 10) : albums.slice(0, 10);
+    var picked = manual.map(function(id){ return pool.filter(function(x){ return x.id === id; })[0]; }).filter(Boolean);
+    var prev = preview(kind);
+    return '<div class="review-box"><h3>' + title + '</h3>' +
+      '<div class="toolbar"><label class="small">目标数量 <input type="number" min="0" max="20" value="' + n + '" data-n="' + kind + '" style="width:80px"></label></div>' +
+      '<div class="small muted">已选（按显示顺序）</div>' +
+      (picked.length ? picked.map(function(x, i){
+        return '<div class="row" style="padding:4px 0"><span style="flex:1">' + esc(x.title) + '</span>' +
+          '<button data-up="' + kind + '" data-id="' + x.id + '"' + (i === 0 ? ' disabled' : '') + '>上移</button>' +
+          '<button data-down="' + kind + '" data-id="' + x.id + '"' + (i === picked.length - 1 ? ' disabled' : '') + '>下移</button>' +
+          '<button class="danger" data-drop="' + kind + '" data-id="' + x.id + '">移除</button></div>';
+      }).join('') : '<div class="notice">未手动选择时，完全按更新时间自动补位。</div>') +
+      '<div class="small muted" style="margin-top:12px">可选内容</div>' +
+      '<div class="row">' + pool.filter(function(x){ return manual.indexOf(x.id) === -1; }).map(function(x){
+        return '<button data-add="' + kind + '" data-id="' + x.id + '">' + esc(x.title) + '</button>';
+      }).join('') + '</div>' +
+      '<div class="small muted" style="margin-top:12px">首页预览（含自动补位）</div><ol class="small">' +
+      prev.map(function(x){ return '<li>' + esc(x.title) + (manual.indexOf(x.id) === -1 ? '（自动补位）' : '') + '</li>'; }).join('') + '</ol>' +
+      '</div>';
+  }
+  $('#app').innerHTML = '<h1>首页推荐配置</h1>' + adminTabs('#/admin/home') +
+    '<p class="muted">手动推荐按设置顺序优先，不足目标数量时按更新时间从新到旧自动补位并去重。</p>' +
+    section('a', '推荐文章') + section('b', '推荐相册');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-n]'), function(inp){
+    inp.onchange = function(){
+      var v = parseInt(inp.value, 10);
+      if (isNaN(v) || v < 0 || v > 20){ toast('请输入 0 到 20 之间的整数'); return; }
+      if (inp.getAttribute('data-n') === 'a') homeCfg.nA = v; else homeCfg.nB = v;
+      toast('目标数量已更新'); renderAdminHome();
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-add]'), function(b){
+    b.onclick = function(){
+      var kind = b.getAttribute('data-add'), id = b.getAttribute('data-id');
+      var arr = kind === 'a' ? homeCfg.a : homeCfg.b;
+      var n = kind === 'a' ? homeCfg.nA : homeCfg.nB;
+      if (arr.length >= n){ toast('已达目标数量，请先移除或调高数量'); return; }
+      arr.push(id); renderAdminHome();
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-drop]'), function(b){
+    b.onclick = function(){
+      var kind = b.getAttribute('data-drop'), id = b.getAttribute('data-id');
+      var key = kind === 'a' ? 'a' : 'b';
+      homeCfg[key] = homeCfg[key].filter(function(x){ return x !== id; });
+      renderAdminHome();
+    };
+  });
+  function move(kind, id, delta){
+    var key = kind === 'a' ? 'a' : 'b';
+    var arr = homeCfg[key];
+    var i = arr.indexOf(id); var j = i + delta;
+    if (i < 0 || j < 0 || j >= arr.length) return;
+    arr[i] = arr[j]; arr[j] = id; renderAdminHome();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-up]'), function(b){
+    b.onclick = function(){ move(b.getAttribute('data-up'), b.getAttribute('data-id'), -1); };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-down]'), function(b){
+    b.onclick = function(){ move(b.getAttribute('data-down'), b.getAttribute('data-id'), 1); };
+  });
+}
+function renderUsers(){
+  var rows = users.map(function(u){
+    return '<tr><td>' + esc(u.name) + '</td><td><span class="status">' + u.role + '</span></td><td>' + u.last + '</td><td>' +
+      (u.fixed ? '<span class="muted small">由服务器管理</span>'
+        : (u.role === '编辑' ? '<button class="danger" data-revoke="' + esc(u.name) + '">撤销编辑</button>'
+          : '<button class="primary" data-grant="' + esc(u.name) + '">授予编辑</button>')) + '</td></tr>';
+  }).join('');
+  $('#app').innerHTML = '<h1>账号权限</h1>' + adminTabs('#/admin/users') +
+    '<p class="muted">管理员账号只能由服务器添加；撤销编辑权限后，已公开内容保留并转归管理员。</p>' +
+    '<div class="table-wrap"><table><thead><tr><th>账号</th><th>角色</th><th>最近活动</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  function findBy(name){ return users.filter(function(u){ return u.name === name; })[0]; }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-grant]'), function(b){
+    b.onclick = function(){
+      var u = findBy(b.getAttribute('data-grant'));
+      confirmDialog({ title:'授予编辑权限', body:'<p>' + esc(u.name) + ' 将只能管理本人创建的内容，新增和修改都需要你审批。</p>', ok:'授予', onOk:function(){
+        u.role = '编辑'; toast('已授予编辑权限'); renderUsers();
+      }});
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-revoke]'), function(b){
+    b.onclick = function(){
+      var u = findBy(b.getAttribute('data-revoke'));
+      confirmDialog({ title:'撤销编辑权限', danger:true, ok:'确认撤销', body:'<p>撤销后该账号无法继续编辑或提交；待审核内容由管理员接管；已公开内容保留并转归管理员。</p>', onOk:function(){
+        u.role = '访客'; toast('已撤销编辑权限'); renderUsers();
+      }});
+    };
+  });
+}
+function renderRecycle(){
+  var rows = recycleItems.map(function(it){
+    return '<tr><td>' + it.type + '</td><td>' + esc(it.title) + '</td><td>' + esc(it.owner) + '</td><td>' + it.by + '</td><td>' + it.at + '</td>' +
+      '<td class="row"><button data-recover="' + it.id + '">恢复</button><button class="danger" data-purge="' + it.id + '">永久删除</button></td></tr>';
+  }).join('');
+  $('#app').innerHTML = '<h1>回收站</h1>' + adminTabs('#/admin/recycle') +
+    '<p class="muted">恢复后统一为已下线，重新上线需要发布或审批。永久删除会清除原图、衍生图、备份、云端副本、临时文件和缓存。</p>' +
+    (rows ? '<div class="table-wrap"><table><thead><tr><th>类型</th><th>标题</th><th>所有者</th><th>删除人</th><th>删除时间</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+      : '<div class="notice">回收站是空的。</div>');
+  function find(id){ return recycleItems.filter(function(x){ return x.id === id; })[0]; }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-recover]'), function(b){
+    b.onclick = function(){
+      var it = find(b.getAttribute('data-recover'));
+      recycleItems = recycleItems.filter(function(x){ return x.id !== it.id; });
+      contentItems.push({ id:it.id, type:it.type, title:it.title, owner:it.owner, status:'已下线', updated:'2026-11-18' });
+      toast('已恢复为已下线'); renderRecycle();
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-purge]'), function(b){
+    b.onclick = function(){
+      var it = find(b.getAttribute('data-purge'));
+      confirmDialog({ title:'永久删除', danger:true, ok:'永久删除', body:'<p>将清除「' + esc(it.title) + '」的原图、衍生图、备份、云端副本、临时文件和缓存。</p><p style="color:var(--danger)">此操作不可恢复。</p>', onOk:function(){
+        recycleItems = recycleItems.filter(function(x){ return x.id !== it.id; });
+        toast('已永久删除并清除文件'); renderRecycle();
+      }});
+    };
+  });
+}
+
+/* ================= 路由 ================= */
+function renderNotFound(){
+  $('#app').innerHTML = '<h1>页面不存在</h1><div class="notice"><a href="#/">返回首页</a></div>';
+}
+function router(){
+  if (pageCleanup){ pageCleanup(); pageCleanup = null; }
+  closePhoto(); closeDialogs();
+  renderHeader();
+  var p = parseHash();
+  if (!p.length){ renderHome(); }
+  else if (p[0] === 'articles'){
+    if (p[1] === 'col' && p[2]) renderArticleList(p[2]);
+    else if (p[1] === 'post' && p[2]) renderArticleDetail(p[2]);
+    else renderArticleCols();
+  }
+  else if (p[0] === 'photos'){
+    if (p[1] === 'col' && p[2]) renderAlbumList(p[2]);
+    else if (p[1] === 'album' && p[2]) renderAlbumDetail(p[2]);
+    else renderPhotoCols();
+  }
+  else if (p[0] === 'login') renderLogin();
+  else if (p[0] === 'editor'){
+    if (state.role === 'visitor') $('#app').innerHTML = denied('编辑');
+    else renderEditor();
+  }
+  else if (p[0] === 'admin'){
+    if (state.role !== 'admin'){ $('#app').innerHTML = denied('管理员'); }
+    else if (p[1] === 'content') renderAdminContent();
+    else if (p[1] === 'home') renderAdminHome();
+    else if (p[1] === 'users') renderUsers();
+    else if (p[1] === 'recycle') renderRecycle();
+    else renderReview();
+  }
+  else renderNotFound();
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', router);
+router();
+</script>
+</body>
+</html>

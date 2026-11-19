@@ -1,0 +1,42 @@
+# Local env
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+.next/
+.astro/
+
+# Runtime data
+var/
+tmp/
+*.log
+
+# Large archives
+*.zip
+*.7z
+*.rar
+
+# Tests
+coverage/
+playwright-report/
+test-results/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local screenshots
+.screenshots/
+
+# Go build cache / binaries
+bin/
+*.exe
