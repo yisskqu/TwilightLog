@@ -9,6 +9,9 @@ servers:
 tags:
   - name: system
   - name: capabilities
+  - name: auth
+  - name: account
+  - name: audit
 paths:
   /healthz:
     get:
@@ -58,13 +61,315 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /api/v1/auth/login:
+    post:
+      tags: [auth]
+      summary: 登录
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: 登录成功，同时写入 refresh Cookie
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+        "401":
+          description: 用户名或密码错误
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: 登录尝试次数过多
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/auth/refresh:
+    post:
+      tags: [auth]
+      summary: 刷新 access token
+      operationId: refreshSession
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: 刷新成功，refresh token 已轮换
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+        "401":
+          description: 会话已失效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/auth/logout:
+    post:
+      tags: [auth]
+      summary: 退出当前设备
+      operationId: logout
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: 当前会话已撤销
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /api/v1/auth/me:
+    get:
+      tags: [auth]
+      summary: 获取当前登录用户
+      operationId: getMe
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 当前用户及权限
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: 未登录或会话失效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/editor/ping:
+    get:
+      tags: [auth]
+      summary: 编辑工作区权限探针
+      operationId: getEditorPing
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 编辑或管理员可访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "403":
+          description: 无权访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/ping:
+    get:
+      tags: [auth]
+      summary: 管理后台权限探针
+      operationId: getAdminPing
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 管理员可访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "403":
+          description: 无权访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/users:
+    get:
+      tags: [account]
+      summary: 账号列表
+      operationId: listAccounts
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - name: search
+          in: query
+          description: 按用户名或邮箱搜索
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 账号分页
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountPage"
+        "403":
+          description: 无权访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags: [account]
+      summary: 创建普通账号
+      operationId: createAccount
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequest"
+      responses:
+        "201":
+          description: 账号已创建
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: 参数不合法
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: 用户名或邮箱已存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/users/{id}/role:
+    patch:
+      tags: [account]
+      summary: 授予或撤销编辑权限
+      operationId: setAccountRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetRoleRequest"
+      responses:
+        "200":
+          description: 角色已更新
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "403":
+          description: 管理员账号受保护或无权访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/users/{id}/reset-password:
+    post:
+      tags: [account]
+      summary: 重置密码
+      operationId: resetAccountPassword
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: 密码已重置，旧会话全部失效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "403":
+          description: 管理员账号受保护或无权访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/users/{id}/status:
+    patch:
+      tags: [account]
+      summary: 禁用或启用账号
+      operationId: setAccountStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetStatusRequest"
+      responses:
+        "200":
+          description: 状态已更新
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "403":
+          description: 管理员账号受保护或无权访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/admin/audit:
+    get:
+      tags: [audit]
+      summary: 审计日志列表
+      operationId: listAuditLogs
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: 审计日志分页
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditPage"
+        "403":
+          description: 无权访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: twilightlog_refresh
   parameters:
+    UserId:
+      name: id
+      in: path
+      required: true
+      description: 账号 ID
+      schema:
+        type: string
+        format: uuid
     Page:
       name: page
       in: query
@@ -118,3 +423,177 @@ components:
           type: array
           items:
             type: string
+    OkResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: ok
+    User:
+      type: object
+      required: [id, username, email, role, status, createdAt, permissions]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [super_admin, admin, editor, user]
+        status:
+          type: string
+          enum: [active, disabled]
+        createdAt:
+          type: string
+          format: date-time
+        permissions:
+          type: array
+          items:
+            type: string
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+        remember:
+          type: boolean
+          default: false
+    SessionResponse:
+      type: object
+      required: [accessToken, expiresIn, user]
+      properties:
+        accessToken:
+          type: string
+        expiresIn:
+          type: integer
+          description: access token 剩余秒数
+        user:
+          $ref: "#/components/schemas/User"
+    Account:
+      type: object
+      required: [id, username, email, role, status, canManage, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [super_admin, admin, editor, user]
+        status:
+          type: string
+          enum: [active, disabled]
+        canManage:
+          type: boolean
+          description: 管理员账号为 false，后台不可操作
+        createdAt:
+          type: string
+          format: date-time
+    AccountPage:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Account"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    CreateAccountRequest:
+      type: object
+      required: [username, email, password]
+      properties:
+        username:
+          type: string
+          description: 3-32 位小写字母、数字、点、横线或下划线
+        email:
+          type: string
+        password:
+          type: string
+          format: password
+          minLength: 8
+        role:
+          type: string
+          enum: [user, editor]
+          default: user
+    SetRoleRequest:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [user, editor]
+    ResetPasswordRequest:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+          format: password
+          minLength: 8
+    SetStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [active, disabled]
+    AuditEntry:
+      type: object
+      required: [id, actorId, actorName, action, targetType, targetId, result, ip, userAgent, metadata, createdAt]
+      properties:
+        id:
+          type: integer
+        actorId:
+          type: string
+          nullable: true
+        actorName:
+          type: string
+        action:
+          type: string
+        targetType:
+          type: string
+        targetId:
+          type: string
+        result:
+          type: string
+          enum: [success, failure]
+        ip:
+          type: string
+        userAgent:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+    AuditPage:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditEntry"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer

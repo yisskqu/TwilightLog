@@ -6,6 +6,7 @@ TwilightLog 是一个以文章与摄影作品为核心的个人图文博客，�
 
 - 阶段 0：本机开发环境已就绪；OSS、函数计算、DNS、服务器等云资源待补齐。
 - 阶段 1：本机 monorepo 骨架已可运行，包含 Go API、PostgreSQL、Caddy、前端占位应用和 CI。
+- 阶段 2：账号、角色、权限、会话与审计已接通；后台提供登录、路由守卫、账号管理和审计页面。
 - 开发顺序、任务拆分和验收标准见 [开发文档](docs/开发文档.md)。
 - 产品规则以 [PRD](docs/article-photography-prd.md) 为准。
 
@@ -29,6 +30,7 @@ TwilightLog 是一个以文章与摄影作品为核心的个人图文博客，�
 │  └─ api/                       # Go API
 │     ├─ cmd/api/
 │     ├─ cmd/migrate/
+│     ├─ cmd/admin/              # 仅用于在服务器上创建管理员
 │     ├─ internal/platform/
 │     ├─ internal/migrations/
 │     └─ api/openapi.yaml
@@ -73,6 +75,7 @@ docker compose -f infra/compose/docker-compose.dev.yml --env-file .env ps
 | API 健康检查 | http://localhost:8080/healthz |
 | API 就绪检查 | http://localhost:8080/readyz |
 | API 能力接口 | http://localhost:8080/api/v1/capabilities |
+| 管理后台（开发服务器） | http://localhost:5173 |
 | PostgreSQL | `localhost:5432` |
 
 停止服务：
@@ -90,6 +93,28 @@ docker exec twilightlog-api /app/migrate status
 docker exec twilightlog-api /app/migrate up
 docker exec twilightlog-api /app/migrate down
 ```
+
+### 创建管理员
+
+管理员账号只能通过 CLI 创建，后台不提供创建入口。先确保数据库已启动并完成迁移：
+
+```powershell
+cd services/api
+go run ./cmd/admin create --username admin --email admin@twilightlog.com --password "至少8位密码" --role super_admin
+```
+
+密码也可以放在 `ADMIN_PASSWORD` 环境变量中，避免出现在命令历史里。普通账号和编辑账号由管理员在后台“账号管理”中创建。
+
+### 认证接口
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| POST | `/api/v1/auth/login` | 用户名、密码、记住登录 |
+| POST | `/api/v1/auth/refresh` | 用 HttpOnly Cookie 刷新 access token |
+| POST | `/api/v1/auth/logout` | 只撤销当前设备会话 |
+| GET | `/api/v1/auth/me` | 当前用户与权限 |
+| GET | `/api/v1/admin/*` | 管理员接口，编辑访问返回 403 |
+| GET | `/api/v1/editor/ping` | 编辑权限探针 |
 
 ### 前端开发
 
@@ -112,7 +137,19 @@ staticcheck ./...
 
 ### 环境变量
 
-`.env` 只用于本地开发，已被 Git 忽略。不要提交 AK、SK、JWT 私钥或真实密码。
+`.env` 只用于本地开发，已被 Git 忽略。不要提交 AK、SK、JWT 密钥或真实密码。
+
+认证相关变量：
+
+```text
+JWT_SECRET=至少32位随机字符串
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL=720h
+REFRESH_TOKEN_TTL_SHORT=24h
+COOKIE_SECURE=false          # 生产 HTTPS 必须改为 true
+COOKIE_DOMAIN=
+CORS_ORIGINS=http://localhost:4321,http://localhost:5173
+```
 
 如果本机无法访问 Docker Hub，可以在 `.env` 中使用国内镜像变量：
 

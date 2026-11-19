@@ -8,13 +8,24 @@ import (
 	"log/slog"
 	"net/http"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 )
 
-type pinger interface {
+// Pinger reports whether a downstream dependency, normally the database, is reachable.
+type Pinger interface {
 	Ping(context.Context) error
+}
+
+// Options describes the shared HTTP router.
+type Options struct {
+	Pinger      Pinger
+	Logger      *slog.Logger
+	CORSOrigins []string
+	// Register mounts additional routes under /api/v1.
+	Register func(chi.Router)
 }
 
 type contextKey string
@@ -28,34 +39,49 @@ type errorResponse struct {
 	RequestID string `json:"requestId"`
 }
 
-func NewRouter(p pinger, logger *slog.Logger) http.Handler {
+// NewRouter keeps the stage 1 signature for tests and simple usage.
+func NewRouter(p Pinger, logger *slog.Logger) http.Handler {
+	return NewRouterWithOptions(Options{Pinger: p, Logger: logger})
+}
+
+// NewRouterWithOptions builds the shared middleware chain and mounts optional routes.
+func NewRouterWithOptions(opts Options) http.Handler {
+	logger := opts.Logger
+	if logger == nil {
+		logger = slog.Default()
+	}
+
 	r := chi.NewRouter()
+	r.Use(CORS(opts.CORSOrigins))
 	r.Use(RequestID)
 	r.Use(AccessLog(logger))
 	r.Use(Recoverer(logger))
 
 	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+		WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
 
 	r.Get("/readyz", func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 		defer cancel()
-		if err := p.Ping(ctx); err != nil {
+		if opts.Pinger == nil || opts.Pinger.Ping(ctx) != nil {
 			WriteError(w, r, http.StatusServiceUnavailable, "database_unavailable", "数据库不可用", nil)
 			return
 		}
-		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+		WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/capabilities", func(w http.ResponseWriter, r *http.Request) {
-			writeJSON(w, http.StatusOK, map[string]any{
+			WriteJSON(w, http.StatusOK, map[string]any{
 				"modules":     []string{},
 				"menus":       []string{},
 				"permissions": []string{},
 			})
 		})
+		if opts.Register != nil {
+			opts.Register(r)
+		}
 	})
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
@@ -66,6 +92,35 @@ func NewRouter(p pinger, logger *slog.Logger) http.Handler {
 	})
 
 	return r
+}
+
+// CORS allows credentialed requests from the configured browser origins only.
+func CORS(origins []string) func(http.Handler) http.Handler {
+	allowed := make(map[string]struct{}, len(origins))
+	for _, origin := range origins {
+		origin = strings.TrimRight(strings.TrimSpace(origin), "/")
+		if origin != "" {
+			allowed[origin] = struct{}{}
+		}
+	}
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			origin := r.Header.Get("Origin")
+			if _, ok := allowed[origin]; ok && origin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
+				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
+				w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-ID")
+				w.Header().Set("Access-Control-Max-Age", "600")
+				w.Header().Add("Vary", "Origin")
+			}
+			if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func RequestID(next http.Handler) http.Handler {
@@ -116,7 +171,7 @@ func Recoverer(logger *slog.Logger) func(http.Handler) http.Handler {
 }
 
 func WriteError(w http.ResponseWriter, r *http.Request, status int, code, message string, details any) {
-	writeJSON(w, status, errorResponse{
+	WriteJSON(w, status, errorResponse{
 		Code:      code,
 		Message:   message,
 		Details:   details,
@@ -129,7 +184,8 @@ func RequestIDFromContext(ctx context.Context) string {
 	return id
 }
 
-func writeJSON(w http.ResponseWriter, status int, payload any) {
+// WriteJSON writes a JSON response with the given status code.
+func WriteJSON(w http.ResponseWriter, status int, payload any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(payload)
