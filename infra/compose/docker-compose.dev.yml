@@ -49,7 +49,19 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4321,http://localhost:5173}
       PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:4321}
       ADMIN_ORIGIN: ${ADMIN_ORIGIN:-http://localhost:5173}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      LOCAL_STORAGE_ROOT: /app/var/uploads
+      ASSET_BASE_URL: ${ASSET_BASE_URL:-http://localhost:8080/assets}
+      API_BASE_URL: ${API_BASE_URL:-http://localhost:8080}
+      MEDIA_SIGNING_SECRET: ${MEDIA_SIGNING_SECRET:-}
+      MEDIA_PROCESSOR: ${MEDIA_PROCESSOR:-local}
+      MEDIA_PROCESS_ASYNC: ${MEDIA_PROCESS_ASYNC:-true}
+      MEDIA_BATCH_LIMIT: ${MEDIA_BATCH_LIMIT:-20}
+      MEDIA_MAX_ARTICLE_BYTES: ${MEDIA_MAX_ARTICLE_BYTES:-5242880}
+      MEDIA_MAX_PHOTO_BYTES: ${MEDIA_MAX_PHOTO_BYTES:-52428800}
       TZ: Asia/Shanghai
+    volumes:
+      - twilightlog_uploads:/app/var/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -87,3 +99,4 @@ volumes:
   twilightlog_pgdata:
   twilightlog_caddy_data:
   twilightlog_caddy_config:
+  twilightlog_uploads:

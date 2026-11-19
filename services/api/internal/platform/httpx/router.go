@@ -24,6 +24,8 @@ type Options struct {
 	Pinger      Pinger
 	Logger      *slog.Logger
 	CORSOrigins []string
+	// Assets serves public derivatives under /assets/*.
+	Assets http.Handler
 	// Register mounts additional routes under /api/v1.
 	Register func(chi.Router)
 }
@@ -71,6 +73,10 @@ func NewRouterWithOptions(opts Options) http.Handler {
 		WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
 
+	if opts.Assets != nil {
+		r.Handle("/assets/*", opts.Assets)
+	}
+
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/capabilities", func(w http.ResponseWriter, r *http.Request) {
 			WriteJSON(w, http.StatusOK, map[string]any{
@@ -110,7 +116,7 @@ func CORS(origins []string) func(http.Handler) http.Handler {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
 				w.Header().Set("Access-Control-Allow-Credentials", "true")
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
-				w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-ID")
+				w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-ID, Idempotency-Key")
 				w.Header().Set("Access-Control-Max-Age", "600")
 				w.Header().Add("Vary", "Origin")
 			}

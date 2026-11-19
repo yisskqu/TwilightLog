@@ -7,6 +7,7 @@ TwilightLog 是一个以文章与摄影作品为核心的个人图文博客，�
 - 阶段 0：本机开发环境已就绪；OSS、函数计算、DNS、服务器等云资源待补齐。
 - 阶段 1：本机 monorepo 骨架已可运行，包含 Go API、PostgreSQL、Caddy、前端占位应用和 CI。
 - 阶段 2：账号、角色、权限、会话与审计已接通；后台提供登录、路由守卫、账号管理和审计页面。
+- 阶段 3：媒体上传与图片管线已接通；支持预签名直传、分片上传、格式校验、EXIF 白名单、方向纠正、BlurHash、WebP 衍生图与水印，原图保持私有。
 - 开发顺序、任务拆分和验收标准见 [开发文档](docs/开发文档.md)。
 - 产品规则以 [PRD](docs/article-photography-prd.md) 为准。
 
@@ -75,6 +76,7 @@ docker compose -f infra/compose/docker-compose.dev.yml --env-file .env ps
 | API 健康检查 | http://localhost:8080/healthz |
 | API 就绪检查 | http://localhost:8080/readyz |
 | API 能力接口 | http://localhost:8080/api/v1/capabilities |
+| 公开衍生图 | `http://localhost:8080/assets/...` |
 | 管理后台（开发服务器） | http://localhost:5173 |
 | PostgreSQL | `localhost:5432` |
 
@@ -116,6 +118,31 @@ go run ./cmd/admin create --username admin --email admin@twilightlog.com --passw
 | GET | `/api/v1/admin/*` | 管理员接口，编辑访问返回 403 |
 | GET | `/api/v1/editor/ping` | 编辑权限探针 |
 
+### 媒体接口
+
+除上传地址外，媒体接口均要求编辑或管理员登录。上传地址本身带短时签名，浏览器可直接 PUT。
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| POST | `/api/v1/media/presign` | 申请上传；返回单文件或分片地址，写操作支持 `Idempotency-Key` |
+| PUT | `/api/v1/media/upload/{id}` | 单文件直传 |
+| PUT | `/api/v1/media/upload/{id}/parts/{part}` | 分片直传 |
+| POST | `/api/v1/media/complete` | 完成上传并开始处理；重复调用不会重复创建 |
+| GET | `/api/v1/media/{id}` | 查询上传/处理状态、宽高、BlurHash、EXIF 白名单与衍生图 |
+| POST | `/api/v1/media/{id}/retry` | 重试失败的处理 |
+| GET | `/api/v1/media/{id}/original` | 获取原图短时签名地址 |
+| GET | `/assets/{key}` | 公开 WebP 衍生图，仅限 `public/` 目录 |
+
+规则：
+
+- 文章图片接受 JPG/PNG/WebP，单文件小于 5 MB；摄影照片接受 JPG/PNG/HEIC，单文件小于 50 MB。
+- 同一 `batchId` 最多 20 张，第 21 张直接拒绝。
+- 格式以文件头为准，扩展名与真实格式不一致会被处理管线拒绝。
+- 原图只存 `private/`，匿名访问返回 404；公开端只访问 `public/` 下的 WebP。
+- 本地适配器用纯 Go 依赖完成 HEIC 解码、WebP 编码与水印；生产环境必须使用云函数处理，配置为 `MEDIA_PROCESSOR=local` 时生产启动会失败。
+- 本地衍生图为预生成的固定 key（`public/media/<id>/w960.webp`），迁移 OSS/CDN 只需替换存储适配器与 `ASSET_BASE_URL`。
+- 前端统一使用 `assetUrl(key, variant)` / `assetSrcSet(key)`，禁止写死图片域名。
+
 ### 前端开发
 
 ```powershell
@@ -149,6 +176,30 @@ REFRESH_TOKEN_TTL_SHORT=24h
 COOKIE_SECURE=false          # 生产 HTTPS 必须改为 true
 COOKIE_DOMAIN=
 CORS_ORIGINS=http://localhost:4321,http://localhost:5173
+```
+
+媒体相关变量：
+
+```text
+STORAGE_DRIVER=local
+LOCAL_STORAGE_ROOT=var/uploads
+ASSET_BASE_URL=http://localhost:8080/assets
+API_BASE_URL=http://localhost:8080
+MEDIA_SIGNING_SECRET=          # 留空时回退到 JWT_SECRET
+MEDIA_PROCESSOR=local          # 仅本地开发；生产必须用云函数
+MEDIA_PROCESS_ASYNC=true
+MEDIA_BATCH_LIMIT=20
+MEDIA_MAX_ARTICLE_BYTES=5242880
+MEDIA_MAX_PHOTO_BYTES=52428800
+```
+
+本地文件结构：
+
+```text
+var/uploads/
+  private/      # 原图，只允许签名 URL 读取
+  public/       # WebP 衍生图，通过 /assets 公开
+  tmp/          # 分片上传临时文件，超过 24 小时自动清理
 ```
 
 如果本机无法访问 Docker Hub，可以在 `.env` 中使用国内镜像变量：
