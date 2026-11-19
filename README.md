@@ -10,6 +10,7 @@ TwilightLog 是一个以文章与摄影作品为核心的个人图文博客，�
 - 阶段 3：媒体上传与图片管线已接通；支持预签名直传、分片上传、格式校验、EXIF 白名单、方向纠正、BlurHash、WebP 衍生图与水印，原图保持私有。
 - 阶段 4：内容模型与公开只读 API 已接通；包含五类内容的多态版本、标签作用域隔离、筛选/排序/分页、搜索、ETag 与可重复导入的种子数据。
 - 阶段 5：公开站静态 MVP 已可用；首页推荐与补位、文章目录/代码复制/公式/图示、摄影瀑布流与照片查看器、搜索筛选、深浅色与响应式、SEO 与 sitemap 均已接通。
+- 阶段 6：管理后台与编辑工作区已接通；包含五类内容的工作版本、提交/撤回、审批对照与标签移除、首页推荐 N₁/N₂、回收站恢复/永久删除、站内通知、标签词库、只读系统信息与设备分级。首页推荐改由后台配置，未配置时按最新公开内容自动补位。
 - 开发顺序、任务拆分和验收标准见 [开发文档](docs/开发文档.md)。
 - 产品规则以 [PRD](docs/article-photography-prd.md) 为准。
 
@@ -182,6 +183,38 @@ pnpm --filter @twilightlog/web build   # 输出 apps/web/dist
 | GET | `/api/v1/admin/*` | 管理员接口，编辑访问返回 403 |
 | GET | `/api/v1/editor/ping` | 编辑权限探针 |
 
+### 编辑工作区与审批接口
+
+编辑只能管理本人内容；管理员传 `all=1` 可查看全站。提交后公开站继续显示已通过版本，只有审批通过才替换。
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/api/v1/workspace/summary` | 五类内容的状态统计 |
+| GET | `/api/v1/workspace/content?type=` | 我的内容列表，支持状态、搜索、分页 |
+| POST | `/api/v1/workspace/content` | 新建内容并生成草稿版本 |
+| GET/PUT | `/api/v1/workspace/content/{type}/{id}` | 读取或保存工作版本 |
+| POST | `/api/v1/workspace/content/{type}/{id}/submit` | 提交审核 |
+| POST | `/api/v1/workspace/content/{type}/{id}/withdraw` | 撤回待审版本 |
+| POST | `/api/v1/workspace/content/{type}/{id}/trash` | 移入回收站，非空上级会阻止 |
+| POST | `/api/v1/workspace/content/{type}/{id}/restore` | 从回收站恢复 |
+| GET | `/api/v1/workspace/recycle?type=` | 回收站列表 |
+| GET | `/api/v1/admin/reviews` | 待审列表 |
+| GET | `/api/v1/admin/reviews/{id}` | 待审详情、公开版对照与标签 |
+| POST | `/api/v1/admin/reviews/{id}/approve` | 通过并替换公开版本，可移除本轮标签 |
+| POST | `/api/v1/admin/reviews/{id}/reject` | 驳回，理由必填并通知编辑 |
+| DELETE | `/api/v1/admin/content/{type}/{id}` | 永久删除回收站内容并清理在线文件 |
+| GET/PUT | `/api/v1/admin/recommendations` | N₁/N₂、手工推荐与全自动补位 |
+| GET | `/api/v1/admin/recommendations/candidates?type=` | 可选公开文章或相册 |
+| GET | `/api/v1/admin/tags?scope=` | 标签词库与使用次数 |
+| PATCH | `/api/v1/admin/tags/{id}` | 重命名或停用标签 |
+| POST | `/api/v1/admin/tags/{id}/merge` | 合并同作用域标签 |
+| GET | `/api/v1/admin/system` | 只读系统信息 |
+| GET | `/api/v1/notifications` | 站内通知与未读数 |
+| POST | `/api/v1/notifications/{id}/read` | 标记单条已读 |
+| POST | `/api/v1/notifications/read-all` | 全部已读 |
+
+高风险操作要求请求头 `X-Client-Device: desktop`；后台会按视口自动发送。手机端可编辑、提交、撤回、恢复回收站和首次发布审批通过，但替换公开版本、永久删除、账号权限与标签维护会被 API 拒绝。
+
 ### 媒体接口
 
 除上传地址外，媒体接口均要求编辑或管理员登录。上传地址本身带短时签名，浏览器可直接 PUT。
@@ -216,6 +249,21 @@ pnpm dev:admin   # http://localhost:5173，/api 代理到 8080
 pnpm -r typecheck
 pnpm -r build
 ```
+
+后台页面：
+
+| 角色 | 路径 | 说明 |
+|---|---|---|
+| 管理员 | `/admin` | 概览与模块入口 |
+| 管理员 | `/admin/workspace/{type}` | 全站内容工作区 |
+| 管理员 | `/admin/reviews` | 审批中心与公开版差异 |
+| 管理员 | `/admin/recommendations` | N₁/N₂、排序与全自动补位 |
+| 管理员 | `/admin/recycle` | 全站回收站、永久删除 |
+| 管理员 | `/admin/tags` | 标签词库维护 |
+| 管理员 | `/admin/system` | 只读系统信息 |
+| 编辑 | `/editor/workspace/{type}` | 本人内容工作区与编辑器 |
+| 编辑 | `/editor/recycle` | 本人回收站 |
+| 编辑/管理员 | `/notifications` 对应后台通知页 | 未读数、已读与跳转 |
 
 ### Go 检查
 

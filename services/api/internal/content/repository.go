@@ -775,6 +775,45 @@ func (r *Repository) ListRecommendations(ctx context.Context, limit int) ([]Reco
 	return result, nil
 }
 
+// RecommendationConfig returns the configured counts, the published slots and
+// fills the remaining slots with the latest public content when automatic mode
+// is enabled and no manual selection exists.
+func (r *Repository) RecommendationConfig(ctx context.Context, limit int) (RecommendationConfig, error) {
+	var cfg RecommendationConfig
+	if err := r.pool.QueryRow(ctx, `SELECT recommendation_n1, recommendation_n2, recommendation_auto_fill
+		FROM system_info WHERE id = 1`).Scan(&cfg.N1, &cfg.N2, &cfg.AutoFill); err != nil {
+		return RecommendationConfig{}, fmt.Errorf("load recommendation settings: %w", err)
+	}
+	items, err := r.ListRecommendations(ctx, limit)
+	if err != nil {
+		return RecommendationConfig{}, err
+	}
+	if len(items) == 0 && cfg.AutoFill {
+		if cfg.N1 > 0 {
+			articles, err := r.ListArticles(ctx, "", Query{Page: 1, PageSize: cfg.N1, Sort: SortLatest})
+			if err != nil {
+				return RecommendationConfig{}, err
+			}
+			for index := range articles.Items {
+				item := articles.Items[index]
+				items = append(items, Recommendation{Type: EntityArticle, Article: &item})
+			}
+		}
+		if cfg.N2 > 0 {
+			albums, err := r.ListAlbums(ctx, "", Query{Page: 1, PageSize: cfg.N2, Sort: SortLatest})
+			if err != nil {
+				return RecommendationConfig{}, err
+			}
+			for index := range albums.Items {
+				item := albums.Items[index]
+				items = append(items, Recommendation{Type: EntityAlbum, Album: &item})
+			}
+		}
+	}
+	cfg.Items = items
+	return cfg, nil
+}
+
 func (r *Repository) getAlbumByID(ctx context.Context, id string) (Album, error) {
 	album, _, err := scanAlbum(r.pool.QueryRow(ctx, albumSelect+" AND al.id::text = $1", id))
 	if errors.Is(err, pgx.ErrNoRows) {

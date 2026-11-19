@@ -52,22 +52,59 @@ func (s *Service) Log(ctx context.Context, actorID *string, action, targetType, 
 	`, actorID, action, targetType, targetID, result, truncate(ip, 64), truncate(userAgent, 256), string(payload))
 }
 
-func (s *Service) List(ctx context.Context, page, pageSize int) (Page, error) {
+// Filter narrows the audit page without allowing edits.
+type Filter struct {
+	Action     string
+	Actor      string
+	Result     string
+	TargetType string
+	From       string
+	To         string
+}
+
+func (s *Service) List(ctx context.Context, filter Filter, page, pageSize int) (Page, error) {
 	page, pageSize = normalizePage(page, pageSize)
 
+	var args []any
+	where := "WHERE 1 = 1"
+	add := func(value any, fragment string) {
+		args = append(args, value)
+		where += fmt.Sprintf(fragment, len(args))
+	}
+	if filter.Action != "" {
+		add(filter.Action, " AND a.action = $%d")
+	}
+	if filter.Result != "" {
+		add(filter.Result, " AND a.result = $%d")
+	}
+	if filter.TargetType != "" {
+		add(filter.TargetType, " AND a.target_type = $%d")
+	}
+	if filter.Actor != "" {
+		add("%"+filter.Actor+"%", " AND u.username ILIKE $%d")
+	}
+	if filter.From != "" {
+		add(filter.From, " AND a.created_at >= $%d::date")
+	}
+	if filter.To != "" {
+		add(filter.To, " AND a.created_at < ($%d::date + interval '1 day')")
+	}
+
 	var total int64
-	if err := s.pool.QueryRow(ctx, `SELECT count(*) FROM audit_logs`).Scan(&total); err != nil {
+	countSQL := `SELECT count(*) FROM audit_logs a LEFT JOIN users u ON u.id = a.actor_id ` + where
+	if err := s.pool.QueryRow(ctx, countSQL, args...).Scan(&total); err != nil {
 		return Page{}, fmt.Errorf("count audit logs: %w", err)
 	}
 
+	args = append(args, pageSize, (page-1)*pageSize)
 	rows, err := s.pool.Query(ctx, `
 		SELECT a.id, a.actor_id::text, COALESCE(u.username, ''), a.action, a.target_type,
 		       a.target_id, a.result, a.ip, a.user_agent, a.metadata, a.created_at
 		FROM audit_logs a
 		LEFT JOIN users u ON u.id = a.actor_id
+		`+where+`
 		ORDER BY a.created_at DESC, a.id DESC
-		LIMIT $1 OFFSET $2
-	`, pageSize, (page-1)*pageSize)
+		LIMIT $`+fmt.Sprint(len(args)-1)+` OFFSET $`+fmt.Sprint(len(args)), args...)
 	if err != nil {
 		return Page{}, fmt.Errorf("list audit logs: %w", err)
 	}

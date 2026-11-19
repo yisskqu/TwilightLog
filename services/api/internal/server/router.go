@@ -16,15 +16,17 @@ import (
 	"github.com/yisskqu/TwilightLog/services/api/internal/content"
 	"github.com/yisskqu/TwilightLog/services/api/internal/media"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/httpx"
+	"github.com/yisskqu/TwilightLog/services/api/internal/workspace"
 )
 
 // Deps carries the services used by the HTTP layer.
 type Deps struct {
-	Auth     *auth.Service
-	Accounts *accounts.Service
-	Audit    *audit.Service
-	Media    *media.Service
-	Content  *content.Service
+	Auth      *auth.Service
+	Accounts  *accounts.Service
+	Audit     *audit.Service
+	Media     *media.Service
+	Content   *content.Service
+	Workspace *workspace.Service
 }
 
 type sessionResponse struct {
@@ -64,12 +66,15 @@ func Register(deps Deps) func(chi.Router) {
 				httpx.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok", "scope": "admin"})
 			})
 			r.Get("/users", listUsersHandler(deps.Accounts))
-			r.Post("/users", createUserHandler(deps.Accounts))
-			r.Patch("/users/{id}/role", setRoleHandler(deps.Accounts))
-			r.Post("/users/{id}/reset-password", resetPasswordHandler(deps.Accounts))
-			r.Patch("/users/{id}/status", setStatusHandler(deps.Accounts))
+			r.Post("/users", createUserHandler(deps.Accounts, deps.Workspace))
+			r.Patch("/users/{id}/role", setRoleHandler(deps.Accounts, deps.Workspace))
+			r.Post("/users/{id}/reset-password", resetPasswordHandler(deps.Accounts, deps.Workspace))
+			r.Patch("/users/{id}/status", setStatusHandler(deps.Accounts, deps.Workspace))
 			r.Get("/audit", listAuditHandler(deps.Audit))
+			registerAdminWorkspaceRoutes(r, deps)
 		})
+
+		registerWorkspaceRoutes(r, deps)
 
 		r.With(deps.Auth.RequireAuth, deps.Auth.RequireEditor).Get("/editor/ping", func(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok", "scope": "editor"})
@@ -182,8 +187,11 @@ func listUsersHandler(svc *accounts.Service) http.HandlerFunc {
 	}
 }
 
-func createUserHandler(svc *accounts.Service) http.HandlerFunc {
+func createUserHandler(svc *accounts.Service, work *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if !requireDesktop(w, r) {
+			return
+		}
 		var payload accounts.CreateInput
 		if !decodeJSON(w, r, &payload) {
 			return
@@ -194,12 +202,19 @@ func createUserHandler(svc *accounts.Service) http.HandlerFunc {
 			writeServiceError(w, r, err)
 			return
 		}
+		if work != nil {
+			work.NotifyAccount(r.Context(), account.ID, "account.created", "账号已创建",
+				"请联系管理员获取初始密码，并及时修改。")
+		}
 		httpx.WriteJSON(w, http.StatusCreated, account)
 	}
 }
 
-func setRoleHandler(svc *accounts.Service) http.HandlerFunc {
+func setRoleHandler(svc *accounts.Service, work *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if !requireDesktop(w, r) {
+			return
+		}
 		var payload struct {
 			Role string `json:"role"`
 		}
@@ -211,12 +226,22 @@ func setRoleHandler(svc *accounts.Service) http.HandlerFunc {
 			writeServiceError(w, r, err)
 			return
 		}
+		if work != nil {
+			title := "编辑权限已撤销"
+			if payload.Role == "editor" {
+				title = "已授予编辑权限"
+			}
+			work.NotifyAccount(r.Context(), chi.URLParam(r, "id"), "account.role", title, "权限变更已立即生效。")
+		}
 		httpx.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	}
 }
 
-func resetPasswordHandler(svc *accounts.Service) http.HandlerFunc {
+func resetPasswordHandler(svc *accounts.Service, work *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if !requireDesktop(w, r) {
+			return
+		}
 		var payload struct {
 			Password string `json:"password"`
 		}
@@ -228,12 +253,19 @@ func resetPasswordHandler(svc *accounts.Service) http.HandlerFunc {
 			writeServiceError(w, r, err)
 			return
 		}
+		if work != nil {
+			work.NotifyAccount(r.Context(), chi.URLParam(r, "id"), "account.password", "密码已重置",
+				"所有设备会话已失效，请使用新密码重新登录。")
+		}
 		httpx.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	}
 }
 
-func setStatusHandler(svc *accounts.Service) http.HandlerFunc {
+func setStatusHandler(svc *accounts.Service, work *workspace.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if !requireDesktop(w, r) {
+			return
+		}
 		var payload struct {
 			Status string `json:"status"`
 		}
@@ -245,6 +277,13 @@ func setStatusHandler(svc *accounts.Service) http.HandlerFunc {
 			writeServiceError(w, r, err)
 			return
 		}
+		if work != nil {
+			title := "账号已启用"
+			if payload.Status == "disabled" {
+				title = "账号已禁用"
+			}
+			work.NotifyAccount(r.Context(), chi.URLParam(r, "id"), "account.status", title, "状态变更已立即生效。")
+		}
 		httpx.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	}
 }
@@ -252,7 +291,15 @@ func setStatusHandler(svc *accounts.Service) http.HandlerFunc {
 func listAuditHandler(svc *audit.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		page, pageSize := pagination(r)
-		result, err := svc.List(r.Context(), page, pageSize)
+		query := r.URL.Query()
+		result, err := svc.List(r.Context(), audit.Filter{
+			Action:     query.Get("action"),
+			Actor:      query.Get("actor"),
+			Result:     query.Get("result"),
+			TargetType: query.Get("targetType"),
+			From:       query.Get("from"),
+			To:         query.Get("to"),
+		}, page, pageSize)
 		if err != nil {
 			writeServiceError(w, r, err)
 			return

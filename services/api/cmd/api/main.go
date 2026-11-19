@@ -21,6 +21,7 @@ import (
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/httpx"
 	"github.com/yisskqu/TwilightLog/services/api/internal/platform/storage"
 	"github.com/yisskqu/TwilightLog/services/api/internal/server"
+	"github.com/yisskqu/TwilightLog/services/api/internal/workspace"
 )
 
 func main() {
@@ -59,7 +60,6 @@ func main() {
 	}
 	accountsService := accounts.NewService(pool, auditService)
 	contentService := content.NewService(content.NewRepository(pool))
-
 	backend, err := storage.NewLocal(cfg.LocalStorageRoot, cfg.AssetBaseURL, cfg.APIBaseURL, cfg.MediaSigningSecret)
 	if err != nil {
 		logger.Error("initialize storage adapter", "error", err)
@@ -82,17 +82,29 @@ func main() {
 	)
 	go runMediaCleanup(ctx, mediaService, logger)
 
+	workspaceService := workspace.NewService(workspace.NewRepository(pool), auditService, mediaService, workspace.Config{
+		AppEnv:          cfg.AppEnv,
+		Processor:       cfg.MediaProcessor,
+		MaxArticleBytes: cfg.MaxArticleBytes,
+		MaxPhotoBytes:   cfg.MaxPhotoBytes,
+		BatchLimit:      cfg.MediaBatchLimit,
+		AccessTokenTTL:  cfg.AccessTokenTTL,
+		RefreshTokenTTL: cfg.RefreshTokenTTL,
+		CookieSecure:    cfg.CookieSecure,
+	})
+
 	handler := httpx.NewRouterWithOptions(httpx.Options{
 		Pinger:      pool,
 		Logger:      logger,
 		CORSOrigins: cfg.CORSOrigins,
 		Assets:      backend.PublicHandler(),
 		Register: server.Register(server.Deps{
-			Auth:     authService,
-			Accounts: accountsService,
-			Audit:    auditService,
-			Media:    mediaService,
-			Content:  contentService,
+			Auth:      authService,
+			Accounts:  accountsService,
+			Audit:     auditService,
+			Media:     mediaService,
+			Content:   contentService,
+			Workspace: workspaceService,
 		}),
 	})
 

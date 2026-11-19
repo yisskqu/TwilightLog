@@ -617,6 +617,383 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspace/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 编辑工作区统计 */
+        get: operations["getWorkspaceSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspace/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 我的内容列表 */
+        get: operations["listWorkspaceContent"];
+        put?: never;
+        /** 新建内容并生成草稿版本 */
+        post: operations["createWorkspaceContent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspace/content/{type}/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 读取工作版本与公开版本 */
+        get: operations["getWorkspaceContent"];
+        /** 保存草稿 */
+        put: operations["saveWorkspaceContent"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspace/content/{type}/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 提交审核 */
+        post: operations["submitWorkspaceContent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspace/content/{type}/{id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 撤回待审版本 */
+        post: operations["withdrawWorkspaceContent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspace/content/{type}/{id}/trash": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 移入回收站 */
+        post: operations["trashWorkspaceContent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspace/content/{type}/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 从回收站恢复 */
+        post: operations["restoreWorkspaceContent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspace/recycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 回收站列表 */
+        get: operations["listWorkspaceRecycle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 站内通知列表 */
+        get: operations["listNotifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 标记单条通知已读 */
+        post: operations["readNotification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 全部标记已读 */
+        post: operations["readAllNotifications"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 待审列表 */
+        get: operations["listReviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reviews/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 审批详情与公开版对照 */
+        get: operations["getReview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reviews/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 通过并替换公开版本 */
+        post: operations["approveReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reviews/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 驳回待审版本 */
+        post: operations["rejectReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 读取首页推荐配置 */
+        get: operations["getRecommendationSettings"];
+        /** 保存首页推荐配置 */
+        put: operations["saveRecommendationSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/recommendations/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 可选推荐内容 */
+        get: operations["listRecommendationCandidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 标签词库 */
+        get: operations["listAdminTags"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/tags/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 重命名或停用标签 */
+        patch: operations["updateTag"];
+        trace?: never;
+    };
+    "/api/v1/admin/tags/{id}/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 合并同作用域标签 */
+        post: operations["mergeTag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/system": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 系统信息（只读） */
+        get: operations["getSystemInfo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/{type}/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 永久删除回收站内容 */
+        delete: operations["purgeContent"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -956,6 +1333,12 @@ export interface components {
         };
         HomeRecommendations: {
             items: components["schemas"]["Recommendation"][];
+            /** @description 首页推荐文章目标数量 */
+            n1: number;
+            /** @description 首页推荐相册目标数量 */
+            n2: number;
+            /** @description 未手工配置时是否用最新公开内容补位 */
+            autoFill: boolean;
         };
         ArticleColumnPage: {
             items: components["schemas"]["ArticleColumn"][];
@@ -1015,6 +1398,199 @@ export interface components {
             total: number;
             totalPages: number;
         };
+        /** @enum {string} */
+        ContentType: "article_column" | "article" | "photo_column" | "album" | "photo";
+        /** @enum {string} */
+        WorkspaceStatus: "draft" | "pending" | "rejected" | "published" | "offline" | "trashed";
+        WorkspaceItem: {
+            /** Format: uuid */
+            id: string;
+            type: components["schemas"]["ContentType"];
+            slug: string;
+            title: string;
+            status: components["schemas"]["WorkspaceStatus"];
+            workingStatus: string;
+            /** Format: uuid */
+            versionId?: string;
+            versionNo?: number;
+            hasPublished: boolean;
+            parentId: string;
+            parentTitle?: string;
+            /** Format: uuid */
+            ownerId: string;
+            ownerName?: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: date-time */
+            trashedAt?: string | null;
+            /** @description 该内容版本引用到的原图/衍生图资源数量 */
+            mediaCount?: number;
+        };
+        WorkspaceItemPage: {
+            items: components["schemas"]["WorkspaceItem"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
+        WorkspaceStats: {
+            type?: components["schemas"]["ContentType"];
+            total?: number;
+            draft?: number;
+            pending?: number;
+            rejected?: number;
+            published?: number;
+            offline?: number;
+            trashed?: number;
+        };
+        WorkspaceSummary: {
+            stats: components["schemas"]["WorkspaceStats"][];
+            pendingTotal: number;
+        };
+        ContentVersion: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            status: "draft" | "pending" | "rejected" | "approved";
+            versionNo: number;
+            payload: {
+                [key: string]: unknown;
+            };
+            comment?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            /** Format: date-time */
+            submittedAt?: string | null;
+            /** Format: date-time */
+            publishedAt?: string | null;
+        };
+        WorkspaceDetail: components["schemas"]["WorkspaceItem"] & {
+            working?: components["schemas"]["ContentVersion"];
+            published?: components["schemas"]["ContentVersion"];
+        };
+        WorkspaceSaveRequest: {
+            type?: components["schemas"]["ContentType"];
+            slug?: string;
+            /** Format: uuid */
+            parentId?: string;
+            payload: {
+                [key: string]: unknown;
+            };
+        };
+        ReviewItem: {
+            /** Format: uuid */
+            versionId: string;
+            type: components["schemas"]["ContentType"];
+            /** Format: uuid */
+            entityId: string;
+            title: string;
+            versionNo: number;
+            status: string;
+            /** Format: uuid */
+            authorId: string;
+            authorName?: string;
+            /** Format: date-time */
+            submittedAt?: string | null;
+            /** Format: date-time */
+            updatedAt?: string;
+            hasPublished: boolean;
+            payload?: {
+                [key: string]: unknown;
+            };
+        };
+        ReviewDetail: components["schemas"]["ReviewItem"] & {
+            published?: {
+                [key: string]: unknown;
+            };
+            tags?: string[];
+            /** Format: date-time */
+            publishedAt?: string | null;
+        };
+        ReviewList: {
+            items: components["schemas"]["ReviewItem"][];
+        };
+        ReviewDecision: {
+            comment?: string;
+            removeTags?: string[];
+        };
+        Notification: {
+            /** Format: uuid */
+            id: string;
+            type: string;
+            /** @enum {string} */
+            severity: "info" | "warning" | "error" | "success";
+            title: string;
+            body: string;
+            link: string;
+            /** Format: date-time */
+            readAt?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        NotificationPage: {
+            items: components["schemas"]["Notification"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            unread: number;
+        };
+        RecommendationSettings: {
+            n1: number;
+            n2: number;
+            autoFill: boolean;
+            items: {
+                position?: number;
+                /** @enum {string} */
+                entityType?: "article" | "album";
+                /** Format: uuid */
+                entityId?: string;
+                title?: string;
+            }[];
+        };
+        CandidateList: {
+            items: {
+                /** @enum {string} */
+                entityType?: "article" | "album";
+                /** Format: uuid */
+                entityId?: string;
+                title?: string;
+                /** Format: date-time */
+                updatedAt?: string;
+            }[];
+        };
+        TagUsage: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            scope: "article" | "photo";
+            name: string;
+            active: boolean;
+            usage: number;
+        };
+        TagUsageList: {
+            scope: string;
+            items: components["schemas"]["TagUsage"][];
+        };
+        SystemInfo: {
+            version: string;
+            buildStatus: string;
+            /** Format: int64 */
+            storageUsage: number;
+            jobStatus?: {
+                [key: string]: unknown;
+            };
+            /** Format: date-time */
+            updatedAt?: string;
+            appEnv: string;
+            maxArticleMB: number;
+            maxPhotoMB: number;
+            batchLimit: number;
+            processor?: string;
+            accessTokenTTL?: string;
+            refreshTokenTTL?: string;
+            cookieSecure?: boolean;
+            watermark?: string;
+        };
     };
     responses: never;
     parameters: {
@@ -1036,6 +1612,10 @@ export interface components {
         DateTo: string;
         /** @description 时间排序 */
         Sort: "latest" | "oldest";
+        /** @description 内容类型 */
+        ContentType: components["schemas"]["ContentType"];
+        /** @description 内容 ID */
+        ContentId: string;
     };
     requestBodies: never;
     headers: never;
@@ -2423,6 +3003,737 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    getWorkspaceSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 五类内容的状态统计 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceSummary"];
+                };
+            };
+            /** @description 未登录 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listWorkspaceContent: {
+        parameters: {
+            query: {
+                type: components["schemas"]["ContentType"];
+                status?: "all" | "draft" | "pending" | "rejected" | "published" | "offline" | "trashed";
+                /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+                q?: components["parameters"]["Search"];
+                /** @description 页码，从 1 开始 */
+                page?: components["parameters"]["Page"];
+                /** @description 每页数量，默认 12 */
+                pageSize?: components["parameters"]["PageSize"];
+                /** @description 管理员传 1 查看全站内容 */
+                all?: "0" | "1";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 工作区内容分页 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceItemPage"];
+                };
+            };
+        };
+    };
+    createWorkspaceContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkspaceSaveRequest"];
+            };
+        };
+        responses: {
+            /** @description 已创建 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceDetail"];
+                };
+            };
+            /** @description 参数不合法 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getWorkspaceContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 内容类型 */
+                type: components["parameters"]["ContentType"];
+                /** @description 内容 ID */
+                id: components["parameters"]["ContentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 内容详情 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceDetail"];
+                };
+            };
+            /** @description 无权访问 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    saveWorkspaceContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 内容类型 */
+                type: components["parameters"]["ContentType"];
+                /** @description 内容 ID */
+                id: components["parameters"]["ContentId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkspaceSaveRequest"];
+            };
+        };
+        responses: {
+            /** @description 已保存 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceDetail"];
+                };
+            };
+            /** @description 有待审版本，需先撤回 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    submitWorkspaceContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 内容类型 */
+                type: components["parameters"]["ContentType"];
+                /** @description 内容 ID */
+                id: components["parameters"]["ContentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已进入审批队列 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceDetail"];
+                };
+            };
+        };
+    };
+    withdrawWorkspaceContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 内容类型 */
+                type: components["parameters"]["ContentType"];
+                /** @description 内容 ID */
+                id: components["parameters"]["ContentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已撤回为草稿 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceDetail"];
+                };
+            };
+        };
+    };
+    trashWorkspaceContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 内容类型 */
+                type: components["parameters"]["ContentType"];
+                /** @description 内容 ID */
+                id: components["parameters"]["ContentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已移入回收站 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description 存在下级内容 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    restoreWorkspaceContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 内容类型 */
+                type: components["parameters"]["ContentType"];
+                /** @description 内容 ID */
+                id: components["parameters"]["ContentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已恢复 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description 上级不可用 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listWorkspaceRecycle: {
+        parameters: {
+            query: {
+                type: components["schemas"]["ContentType"];
+                /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+                q?: components["parameters"]["Search"];
+                /** @description 页码，从 1 开始 */
+                page?: components["parameters"]["Page"];
+                /** @description 每页数量，默认 12 */
+                pageSize?: components["parameters"]["PageSize"];
+                /** @description 管理员传 1 查看全站回收站 */
+                all?: "0" | "1";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 回收站分页 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceItemPage"];
+                };
+            };
+        };
+    };
+    listNotifications: {
+        parameters: {
+            query?: {
+                /** @description 页码，从 1 开始 */
+                page?: components["parameters"]["Page"];
+                /** @description 每页数量，默认 12 */
+                pageSize?: components["parameters"]["PageSize"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 通知分页与未读数 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPage"];
+                };
+            };
+        };
+    };
+    readNotification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已读 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+        };
+    };
+    readAllNotifications: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已全部已读 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+        };
+    };
+    listReviews: {
+        parameters: {
+            query?: {
+                type?: components["schemas"]["ContentType"];
+                /** @description 关键词，匹配标题、摘要、正文索引与标签 */
+                q?: components["parameters"]["Search"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 待审内容 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewList"];
+                };
+            };
+        };
+    };
+    getReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 版本 ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 审批详情 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewDetail"];
+                };
+            };
+        };
+    };
+    approveReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewDecision"];
+            };
+        };
+        responses: {
+            /** @description 已通过 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status?: string;
+                        removedTags?: string[];
+                    };
+                };
+            };
+            /** @description 手机端不能替换公开版本 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    rejectReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewDecision"];
+            };
+        };
+        responses: {
+            /** @description 已驳回 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description 驳回理由必填 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getRecommendationSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 推荐配置 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecommendationSettings"];
+                };
+            };
+        };
+    };
+    saveRecommendationSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecommendationSettings"];
+            };
+        };
+        responses: {
+            /** @description 已保存 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description 数量超限或目标不可见 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listRecommendationCandidates: {
+        parameters: {
+            query: {
+                type: "article" | "album";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 公开可见的候选内容 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateList"];
+                };
+            };
+        };
+    };
+    listAdminTags: {
+        parameters: {
+            query?: {
+                scope?: "article" | "photo";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 标签与使用数量 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagUsageList"];
+                };
+            };
+        };
+    };
+    updateTag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name?: string;
+                    active?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description 已更新 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description 仅桌面端 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    mergeTag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 被合并的标签 ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    targetId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 已合并 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description 跨作用域或目标相同 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getSystemInfo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 部署版本、存储用量与只读策略 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemInfo"];
+                };
+            };
+        };
+    };
+    purgeContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 内容类型 */
+                type: components["parameters"]["ContentType"];
+                /** @description 内容 ID */
+                id: components["parameters"]["ContentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已删除并清理在线文件 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status: string;
+                        mediaPurged: number;
+                    };
+                };
+            };
+            /** @description 仅桌面端管理员 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
         };
     };

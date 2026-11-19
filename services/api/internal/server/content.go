@@ -154,19 +154,27 @@ type columnAlbumsResponse struct {
 }
 
 type recommendationsResponse struct {
-	Items []recommendationResponse `json:"items"`
+	Items    []recommendationResponse `json:"items"`
+	N1       int                      `json:"n1"`
+	N2       int                      `json:"n2"`
+	AutoFill bool                     `json:"autoFill"`
 }
 
 func recommendationsHandler(svc *content.Service, mediaSvc *media.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-		items, err := svc.Recommendations(r.Context(), limit)
+		config, err := svc.Recommendations(r.Context(), limit)
 		if err != nil {
 			writeContentError(w, r, err)
 			return
 		}
-		result := recommendationsResponse{Items: make([]recommendationResponse, 0, len(items))}
-		for _, item := range items {
+		result := recommendationsResponse{
+			Items:    make([]recommendationResponse, 0, len(config.Items)),
+			N1:       config.N1,
+			N2:       config.N2,
+			AutoFill: config.AutoFill,
+		}
+		for _, item := range config.Items {
 			entry := recommendationResponse{Type: item.Type}
 			if item.Article != nil {
 				article := newArticleResponse(mediaSvc, *item.Article)

@@ -107,15 +107,15 @@ func (s *Service) ListTags(ctx context.Context, scope string) ([]Tag, error) {
 	return s.repo.ListTags(ctx, scope)
 }
 
-// Recommendations returns the configured home page selection.
-func (s *Service) Recommendations(ctx context.Context, limit int) ([]Recommendation, error) {
+// Recommendations returns the configured home page selection and counts.
+func (s *Service) Recommendations(ctx context.Context, limit int) (RecommendationConfig, error) {
 	if limit <= 0 {
-		limit = 6
-	}
-	if limit > 12 {
 		limit = 12
 	}
-	return s.repo.ListRecommendations(ctx, limit)
+	if limit > 24 {
+		limit = 24
+	}
+	return s.repo.RecommendationConfig(ctx, limit)
 }
 
 var searchTypes = map[string]struct{}{

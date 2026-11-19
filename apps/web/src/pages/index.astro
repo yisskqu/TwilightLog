@@ -8,14 +8,15 @@ import {
   getRecommendations,
 } from "../lib/api";
 
-const ARTICLE_TARGET = 3;
-const ALBUM_TARGET = 3;
-
-const [recommendations, latestArticles, latestAlbums] = await Promise.all([
-  getRecommendations(10),
-  getLatestArticles(ARTICLE_TARGET + 3),
-  getLatestAlbums(ALBUM_TARGET + 3),
+const [recommendationData, latestArticles, latestAlbums] = await Promise.all([
+  getRecommendations(12),
+  getLatestArticles(6),
+  getLatestAlbums(6),
 ]);
+
+const ARTICLE_TARGET = recommendationData.n1;
+const ALBUM_TARGET = recommendationData.n2;
+const recommendations = recommendationData.items;
 
 const articles = recommendations
   .filter((item) => item.type === "article" && item.article)

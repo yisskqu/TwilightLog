@@ -11,6 +11,7 @@ export type PhotoSummary = components["schemas"]["PhotoSummary"];
 export type PhotoDetail = components["schemas"]["PhotoDetail"];
 export type SearchHit = components["schemas"]["SearchHit"];
 export type Recommendation = components["schemas"]["Recommendation"];
+export type HomeRecommendations = components["schemas"]["HomeRecommendations"];
 
 export interface Page<T> {
   items: T[];
@@ -70,11 +71,11 @@ function withQuery(path: string, params: Record<string, string | number | undefi
   return query ? `${path}?${query}` : path;
 }
 
-export async function getRecommendations(limit = 10): Promise<Recommendation[]> {
-  const data = await getJSON<{ items: Recommendation[] }>(
+export async function getRecommendations(limit = 10): Promise<HomeRecommendations> {
+  const data = await getJSON<HomeRecommendations>(
     withQuery("/api/v1/home/recommendations", { limit }),
   );
-  return data?.items ?? [];
+  return data ?? { items: [], n1: 3, n2: 3, autoFill: true };
 }
 
 export async function listArticleColumns(pageSize = 50): Promise<Page<ArticleColumn>> {

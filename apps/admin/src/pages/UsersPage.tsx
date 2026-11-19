@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ApiError, apiRequest, type Account, type Page } from "../api";
+import { ApiError, apiRequest, isMobileViewport, type Account, type Page } from "../api";
 
 const roleLabels: Record<string, string> = {
   super_admin: "超级管理员",
@@ -20,6 +20,7 @@ export function UsersPage() {
   const [showCreate, setShowCreate] = useState(false);
 
   const pageSize = 12;
+  const mobile = isMobileViewport();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -109,12 +110,18 @@ export function UsersPage() {
           <h1>账号管理</h1>
           <p className="subtitle">创建普通账号、授予编辑权限、重置密码或禁用账号。管理员账号只能通过服务器命令操作。</p>
         </div>
-        <button type="button" className="btn primary" onClick={() => setShowCreate((current) => !current)}>
+        <button
+          type="button"
+          className="btn primary"
+          disabled={mobile}
+          onClick={() => setShowCreate((current) => !current)}
+        >
           {showCreate ? "收起" : "创建账号"}
         </button>
       </header>
 
-      {showCreate ? <CreateAccountForm onCreated={() => void load()} onError={setError} /> : null}
+      {mobile ? <div className="notice">手机端账号页为只读，创建账号与权限变更请使用桌面端。</div> : null}
+      {showCreate && !mobile ? <CreateAccountForm onCreated={() => void load()} onError={setError} /> : null}
       {error ? <div className="alert">{error}</div> : null}
 
       <div className="toolbar">
@@ -163,7 +170,7 @@ export function UsersPage() {
                       <button
                         type="button"
                         className="btn small"
-                        disabled={busyId === account.id}
+                        disabled={mobile || busyId === account.id}
                         onClick={() => void toggleRole(account)}
                       >
                         {account.role === "editor" ? "撤销编辑" : "授予编辑"}
@@ -171,7 +178,7 @@ export function UsersPage() {
                       <button
                         type="button"
                         className="btn small"
-                        disabled={busyId === account.id}
+                        disabled={mobile || busyId === account.id}
                         onClick={() => void resetPassword(account)}
                       >
                         重置密码
@@ -179,7 +186,7 @@ export function UsersPage() {
                       <button
                         type="button"
                         className="btn small danger"
-                        disabled={busyId === account.id}
+                        disabled={mobile || busyId === account.id}
                         onClick={() => void toggleStatus(account)}
                       >
                         {account.status === "active" ? "禁用" : "启用"}
