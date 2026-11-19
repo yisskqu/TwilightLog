@@ -225,7 +225,7 @@ func articleSeedSpecs() []articleSpec {
 		{
 			id: seedUUID(2, 4), slug: "astro-static-blog", columnSlug: "tech",
 			title: "用 Astro 构建静态博客", summary: "静态生成的取舍、目录结构与图片处理方式。",
-			body: "# 为什么是静态\n\n内容站的请求大多是读取，静态文件最直接。\n\n```js\nconst posts = await Astro.glob('./posts/*.md');\n```\n\n构建失败时旧版本继续服务，是静态站的额外好处。",
+			body: "# 为什么是静态\n\n内容站的请求大多是读取，静态文件最直接。\n\n```js\nconst posts = await Astro.glob('./posts/*.md');\n```\n\n## 构建的代价\n\n假设有 $n$ 个页面，每个页面平均耗时 $t_i$，总构建时间近似为：\n\n$$\nT = \\sum_{i=1}^{n} t_i\n$$\n\n发布链路可以简化为：\n\n```mermaid\nflowchart LR\n  A[编辑提交] --> B[管理员审批]\n  B --> C[Astro 构建]\n  C --> D[静态发布]\n```\n\n构建失败时旧版本继续服务，是静态站的额外好处。",
 			tags: []string{"前端", "技术"}, cover: true, daysAgo: 9, status: "published",
 		},
 		{

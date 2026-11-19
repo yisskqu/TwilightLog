@@ -1,0 +1,129 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import AlbumPhotoViewer from "../../../components/AlbumPhotoViewer";
+import {
+  listAlbumPhotos,
+  listColumnAlbums,
+  listPhotoColumns,
+  type Album,
+  type PhotoSummary,
+} from "../../../lib/api";
+import { albumTime } from "../../../lib/api";
+import { formatDate, imageSource } from "../../../lib/format";
+
+export async function getStaticPaths() {
+  const columns = await listPhotoColumns();
+  const paths = [];
+  for (const column of columns.items) {
+    const albums = await listColumnAlbums(column.slug, 50);
+    for (const album of albums.items) {
+      const photos = await listAlbumPhotos(album.slug, 50);
+      paths.push({
+        params: { column: column.slug, album: album.slug },
+        props: { album, photos: photos.items },
+      });
+    }
+  }
+  return paths;
+}
+
+interface Props {
+  album: Album;
+  photos: PhotoSummary[];
+}
+
+const { album, photos } = Astro.props as Props;
+const cover = imageSource(album.cover, "w1440");
+const updated = albumTime(album);
+const canonical = `/photos/${album.column.slug}/${album.slug}`;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ImageGallery",
+  name: album.title,
+  description: album.description,
+  url: new URL(canonical, Astro.site ?? "https://www.twilightlog.com").toString(),
+  inLanguage: "zh-CN",
+  numberOfItems: photos.length,
+  image: photos
+    .map((photo) => imageSource(photo.media, "w960")?.src)
+    .filter((src): src is string => Boolean(src)),
+};
+---
+
+<BaseLayout
+  title={album.title}
+  description={album.description || `${album.title} 相册。`}
+  canonical={canonical}
+  image={cover?.src}
+  jsonLd={jsonLd}
+>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a>
+      <span aria-hidden="true">/</span>
+      <a href="/photos">摄影</a>
+      <span aria-hidden="true">/</span>
+      <a href={`/photos/${album.column.slug}`}>{album.column.name}</a>
+      <span aria-hidden="true">/</span>
+      <span>{album.title}</span>
+    </nav>
+
+    <header class="album-head">
+      <p class="eyebrow">
+        {album.column.name}
+        {album.location ? ` · ${album.location}` : ""}
+      </p>
+      <h1 class="display">{album.title}</h1>
+      <p class="lede">{album.description}</p>
+      <div class="album-facts">
+        <span>{album.photoCount} 张照片</span>
+        {album.shotAt ? <span>拍摄于 {formatDate(album.shotAt)}</span> : null}
+        {updated ? <span>更新于 {formatDate(new Date(updated).toISOString())}</span> : null}
+        {album.tags.length ? <span>{album.tags.join(" / ")}</span> : null}
+      </div>
+    </header>
+
+    {
+      photos.length > 0 ? (
+        <div class="photo-masonry">
+          {photos.map((photo, index) => {
+            const image = imageSource(photo.media, "w960");
+            return (
+              <button
+                type="button"
+                class="photo-tile"
+                data-photo-index={index}
+                aria-label={`查看照片：${photo.title}`}
+              >
+                {image ? (
+                  <img
+                    src={image.src}
+                    srcset={image.srcset}
+                    sizes="(max-width: 560px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    width={image.width}
+                    height={image.height}
+                    alt={photo.title}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : null}
+                <span class="caption">
+                  <strong>{photo.title}</strong>
+                  <span>{photo.location || photo.takenAt}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <strong>相册还没有公开照片</strong>
+          <span>照片通过审核后会出现在这里。</span>
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>
+
+{photos.length > 0 ? <AlbumPhotoViewer client:load photos={photos} /> : null}

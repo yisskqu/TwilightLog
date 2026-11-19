@@ -1,0 +1,84 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Explorer from "../../../components/Explorer";
+import {
+  listColumnAlbums,
+  listPhotoColumns,
+  listTags,
+  type PhotoColumn,
+} from "../../../lib/api";
+import { imageSource } from "../../../lib/format";
+
+export async function getStaticPaths() {
+  const columns = await listPhotoColumns();
+  return columns.items.map((column) => ({
+    params: { column: column.slug },
+    props: { column },
+  }));
+}
+
+interface Props {
+  column: PhotoColumn;
+}
+
+const { column } = Astro.props as Props;
+const [albumPage, tags] = await Promise.all([
+  listColumnAlbums(column.slug, 12),
+  listTags("photo"),
+]);
+
+const cover = imageSource(column.cover, "w1440");
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: column.name,
+  description: column.description,
+  url: new URL(`/photos/${column.slug}`, Astro.site ?? "https://www.twilightlog.com").toString(),
+  inLanguage: "zh-CN",
+};
+---
+
+<BaseLayout
+  title={column.name}
+  description={column.description || `${column.name} 摄影专栏下的公开相册。`}
+  canonical={`/photos/${column.slug}`}
+  image={cover?.src}
+  jsonLd={jsonLd}
+>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a>
+      <span aria-hidden="true">/</span>
+      <a href="/photos">摄影</a>
+      <span aria-hidden="true">/</span>
+      <span>{column.name}</span>
+    </nav>
+
+    <header class="page-head">
+      <p class="eyebrow">Photo column · {column.albumCount} 本相册</p>
+      <h1 class="display">{column.name}</h1>
+      <p class="lede">{column.description || "这个摄影专栏还没有填写简介。"}</p>
+      {
+        column.tags.length ? (
+          <div class="tag-row" style="margin-top:16px">
+            {column.tags.map((tag: string) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        ) : null
+      }
+    </header>
+
+    <Explorer
+      client:load
+      kind="album"
+      endpoint={`/api/v1/photo-columns/${column.slug}/albums`}
+      initialItems={albumPage.items}
+      initialTotal={albumPage.total}
+      initialTotalPages={albumPage.totalPages}
+      tagGroups={[{ key: "photo", label: "摄影标签", tags }]}
+      emptyTitle="这个专栏还没有匹配的相册"
+      emptyText="可以清除筛选条件，或稍后再来看看。"
+    />
+  </div>
+</BaseLayout>

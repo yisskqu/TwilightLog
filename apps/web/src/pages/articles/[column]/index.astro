@@ -1,0 +1,84 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Explorer from "../../../components/Explorer";
+import {
+  listArticleColumns,
+  listColumnArticles,
+  listTags,
+  type ArticleColumn,
+} from "../../../lib/api";
+import { imageSource } from "../../../lib/format";
+
+export async function getStaticPaths() {
+  const columns = await listArticleColumns();
+  return columns.items.map((column) => ({
+    params: { column: column.slug },
+    props: { column },
+  }));
+}
+
+interface Props {
+  column: ArticleColumn;
+}
+
+const { column } = Astro.props as Props;
+const [articlePage, tags] = await Promise.all([
+  listColumnArticles(column.slug, 12),
+  listTags("article"),
+]);
+
+const cover = imageSource(column.cover, "w1440");
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: column.name,
+  description: column.description,
+  url: new URL(`/articles/${column.slug}`, Astro.site ?? "https://www.twilightlog.com").toString(),
+  inLanguage: "zh-CN",
+};
+---
+
+<BaseLayout
+  title={column.name}
+  description={column.description || `${column.name} 专栏下的公开文章。`}
+  canonical={`/articles/${column.slug}`}
+  image={cover?.src}
+  jsonLd={jsonLd}
+>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a>
+      <span aria-hidden="true">/</span>
+      <a href="/articles">文章</a>
+      <span aria-hidden="true">/</span>
+      <span>{column.name}</span>
+    </nav>
+
+    <header class="page-head">
+      <p class="eyebrow">Article column · {column.articleCount} 篇</p>
+      <h1 class="display">{column.name}</h1>
+      <p class="lede">{column.description || "这个专栏还没有填写简介。"}</p>
+      {
+        column.tags.length ? (
+          <div class="tag-row" style="margin-top:16px">
+            {column.tags.map((tag: string) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        ) : null
+      }
+    </header>
+
+    <Explorer
+      client:load
+      kind="article"
+      endpoint={`/api/v1/article-columns/${column.slug}/articles`}
+      initialItems={articlePage.items}
+      initialTotal={articlePage.total}
+      initialTotalPages={articlePage.totalPages}
+      tagGroups={[{ key: "article", label: "文章标签", tags }]}
+      emptyTitle="这个专栏还没有匹配的文章"
+      emptyText="可以清除筛选条件，或稍后再来看看。"
+    />
+  </div>
+</BaseLayout>

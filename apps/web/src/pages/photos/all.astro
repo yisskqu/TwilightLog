@@ -1,0 +1,51 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Explorer from "../../components/Explorer";
+import { listPhotos, listTags } from "../../lib/api";
+
+const [photoPage, tags] = await Promise.all([listPhotos(12), listTags("photo")]);
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ImageGallery",
+  name: "全部照片",
+  url: new URL("/photos/all", Astro.site ?? "https://www.twilightlog.com").toString(),
+  inLanguage: "zh-CN",
+};
+---
+
+<BaseLayout
+  title="全部照片"
+  description="按标签、日期与时间排序浏览 TwilightLog 的全部公开照片。"
+  canonical="/photos/all"
+  jsonLd={jsonLd}
+>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a>
+      <span aria-hidden="true">/</span>
+      <a href="/photos">摄影</a>
+      <span aria-hidden="true">/</span>
+      <span>全部照片</span>
+    </nav>
+
+    <header class="page-head">
+      <p class="eyebrow">Gallery</p>
+      <h1 class="display">全部照片</h1>
+      <p class="lede">
+        所有公开照片的瀑布流。点击任意照片进入固定尺寸的查看区，可缩放、拖动，并用两侧按钮或方向键切换。
+      </p>
+    </header>
+
+    <Explorer
+      client:load
+      kind="photo"
+      endpoint="/api/v1/photos"
+      initialItems={photoPage.items}
+      initialTotal={photoPage.total}
+      initialTotalPages={photoPage.totalPages}
+      tagGroups={[{ key: "photo", label: "摄影标签", tags }]}
+      emptyTitle="没有匹配的照片"
+      emptyText="清除筛选条件后再试一次。"
+    />
+  </div>
+</BaseLayout>

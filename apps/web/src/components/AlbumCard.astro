@@ -1,0 +1,41 @@
+---
+import type { Album } from "../lib/api";
+import { albumTime } from "../lib/api";
+import { formatDate, imageSource } from "../lib/format";
+
+interface Props {
+  album: Album;
+  reveal?: boolean;
+}
+
+const { album, reveal = false } = Astro.props;
+const image = imageSource(album.cover, "w960");
+const href = `/photos/${album.column.slug}/${album.slug}`;
+const time = albumTime(album);
+const dateLabel = time ? formatDate(new Date(time).toISOString()) : "";
+---
+
+<a class:list={["card", { reveal }]} href={href}>
+  <div class:list={["card-media", { "no-image": !image }]}>
+    {
+      image ? (
+        <img
+          src={image.src}
+          srcset={image.srcset}
+          sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw"
+          width={image.width}
+          height={image.height}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      ) : null
+    }
+  </div>
+  <div class="card-body">
+    <p class="eyebrow">{album.column.name}{album.location ? ` · ${album.location}` : ""}</p>
+    <h3>{album.title}</h3>
+    <p>{album.description}</p>
+    <p class="meta">{album.photoCount} 张{dateLabel ? ` · ${dateLabel}` : ""}</p>
+  </div>
+</a>

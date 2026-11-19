@@ -1,9 +1,9 @@
 import createClient from "openapi-fetch";
-import type { paths } from "./schema";
+import type { components, paths } from "./schema";
 
 export const api = createClient<paths>({ baseUrl: "" });
 
-export type { paths };
+export type { paths, components };
 
 /** Display variants generated for every public photo. */
 export type AssetVariant = "w480" | "w960" | "w1440" | "w2048" | "w2560";

@@ -1,0 +1,53 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ColumnCard from "../../components/ColumnCard.astro";
+import { listArticleColumns } from "../../lib/api";
+
+const columns = await listArticleColumns();
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "文章专栏",
+  description: "TwilightLog 的文章专栏列表。",
+  url: new URL("/articles", Astro.site ?? "https://www.twilightlog.com").toString(),
+  inLanguage: "zh-CN",
+};
+---
+
+<BaseLayout
+  title="文章"
+  description="TwilightLog 的文章专栏：技术笔记、旅记与生活随想。"
+  jsonLd={jsonLd}
+>
+  <div class="wrap">
+    <header class="page-head">
+      <p class="eyebrow">Articles</p>
+      <h1 class="display">文章专栏</h1>
+      <p class="lede">按主题整理的写作。每个专栏下是持续更新的文章列表，可以按标签、日期与时间排序筛选。</p>
+    </header>
+
+    <div class="column-list">
+      {
+        columns.items.map((column) => (
+          <ColumnCard
+            href={`/articles/${column.slug}`}
+            name={column.name}
+            description={column.description}
+            cover={column.cover}
+            count={column.articleCount}
+            countLabel="篇文章"
+          />
+        ))
+      }
+    </div>
+
+    {
+      columns.items.length === 0 ? (
+        <div class="empty-state">
+          <strong>还没有公开专栏</strong>
+          <span>内容发布并通过审核后会出现在这里。</span>
+        </div>
+      ) : null
+    }
+  </div>
+</BaseLayout>

@@ -10,7 +10,14 @@
   },
   "dependencies": {
     "@astrojs/react": "^4.0.0",
+    "@astrojs/sitemap": "^3.7.5",
+    "@twilightlog/api-client": "workspace:*",
+    "@twilightlog/design-tokens": "workspace:*",
     "astro": "^5.0.0",
+    "katex": "^0.18.11",
+    "marked": "^18.2.1",
+    "marked-katex-extension": "^5.1.13",
+    "mermaid": "^12.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

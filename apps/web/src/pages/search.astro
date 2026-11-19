@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Explorer from "../components/Explorer";
+import { listTags } from "../lib/api";
+
+const [articleTags, photoTags] = await Promise.all([listTags("article"), listTags("photo")]);
+---
+
+<BaseLayout
+  title="搜索"
+  description="搜索 TwilightLog 的文章、专栏、相册与照片，支持多标签同时包含、日期筛选与排序。"
+  canonical="/search"
+  noindex
+>
+  <div class="wrap">
+    <header class="page-head">
+      <p class="eyebrow">Search</p>
+      <h1 class="display">搜索与筛选</h1>
+      <p class="lede">
+        输入关键词，或组合标签、日期与排序条件。标签为“同时包含”逻辑；条件会写入地址栏，从详情页返回时仍会保留。
+      </p>
+    </header>
+
+    <Explorer
+      client:load
+      kind="search"
+      endpoint="/api/v1/search"
+      initialItems={[]}
+      initialTotal={0}
+      initialTotalPages={0}
+      typeFilter
+      tagGroups={[
+        { key: "article", label: "文章标签", tags: articleTags },
+        { key: "photo", label: "摄影标签", tags: photoTags },
+      ]}
+      emptyTitle="还没有匹配的内容"
+      emptyText="试试其他关键词，或者调整标签和日期范围。"
+    />
+  </div>
+</BaseLayout>
