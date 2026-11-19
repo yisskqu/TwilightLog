@@ -9,7 +9,8 @@
   --muted: #6f6558;
   --line: #191713;
   --line-soft: #d9d0bf;
-  --accent: #b45309;
+  /* Slightly darker than the previous #b45309 so eyebrow text clears WCAG AA. */
+  --accent: #a94e07;
   --accent-soft: #f0d9bd;
   --danger: #a3261c;
   --shadow: 6px 6px 0 rgba(25, 23, 19, 0.9);

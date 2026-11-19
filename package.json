@@ -7,6 +7,11 @@
     "dev:admin": "pnpm --filter @twilightlog/admin dev",
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm -r build",
-    "generate:api": "pnpm --filter @twilightlog/api-client generate"
+    "generate:api": "pnpm --filter @twilightlog/api-client generate",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1"
   }
 }

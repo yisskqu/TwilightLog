@@ -6,7 +6,12 @@ const site = process.env.SITE_URL ?? "https://www.twilightlog.com";
 
 export default defineConfig({
   site,
-  integrations: [react(), sitemap()],
+  // Astro 7 defaults to JSX-style whitespace stripping, which can glue inline
+  // elements together. Keep HTML-aware compression so Chinese copy spacing is
+  // unchanged from v5.
+  compressHTML: true,
+  // Search is deliberately noindex, so it must not be advertised in the sitemap.
+  integrations: [react(), sitemap({ filter: (page) => !page.includes("/search") })],
   server: {
     host: "127.0.0.1",
     port: 4321,

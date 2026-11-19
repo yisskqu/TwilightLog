@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -95,6 +96,9 @@ func (s *Service) Detail(ctx context.Context, actor auth.User, code, id string) 
 	}
 	detail, err := s.repo.Get(ctx, info, id)
 	if err != nil {
+		if errors.Is(err, ErrNotFound) && !isAdmin(actor) {
+			return Detail{}, ErrForbidden
+		}
 		return Detail{}, err
 	}
 	if !canManage(actor, detail.OwnerID) {
@@ -135,7 +139,7 @@ func (s *Service) Save(ctx context.Context, actor auth.User, code, id string, in
 	if err != nil {
 		return Detail{}, err
 	}
-	owner, err := s.repo.Owner(ctx, info, id)
+	owner, err := s.owner(ctx, actor, info, id)
 	if err != nil {
 		return Detail{}, err
 	}
@@ -166,7 +170,7 @@ func (s *Service) Submit(ctx context.Context, actor auth.User, code, id, ip, use
 	if err != nil {
 		return Detail{}, err
 	}
-	owner, err := s.repo.Owner(ctx, info, id)
+	owner, err := s.owner(ctx, actor, info, id)
 	if err != nil {
 		return Detail{}, err
 	}
@@ -191,7 +195,7 @@ func (s *Service) Withdraw(ctx context.Context, actor auth.User, code, id, ip, u
 	if err != nil {
 		return Detail{}, err
 	}
-	owner, err := s.repo.Owner(ctx, info, id)
+	owner, err := s.owner(ctx, actor, info, id)
 	if err != nil {
 		return Detail{}, err
 	}
@@ -217,11 +221,17 @@ func (s *Service) Pending(ctx context.Context, code, search string) ([]ReviewIte
 
 // ReviewDetail loads one submission.
 func (s *Service) ReviewDetail(ctx context.Context, versionID string) (ReviewDetail, error) {
+	if !IsUUID(versionID) {
+		return ReviewDetail{}, ErrNotFound
+	}
 	return s.repo.ReviewDetail(ctx, versionID)
 }
 
 // Approve publishes a pending version.
 func (s *Service) Approve(ctx context.Context, actor auth.User, versionID, comment string, removeTags []string, ip, userAgent string) (ReviewDetail, []string, error) {
+	if !IsUUID(versionID) {
+		return ReviewDetail{}, nil, ErrNotFound
+	}
 	detail, removed, err := s.repo.Approve(ctx, versionID, actor.ID, comment, removeTags)
 	if err != nil {
 		return ReviewDetail{}, nil, err
@@ -240,6 +250,9 @@ func (s *Service) Reject(ctx context.Context, actor auth.User, versionID, commen
 	comment = strings.TrimSpace(comment)
 	if comment == "" {
 		return ReviewDetail{}, fmt.Errorf("%w: 驳回理由不能为空", ErrInvalidInput)
+	}
+	if !IsUUID(versionID) {
+		return ReviewDetail{}, ErrNotFound
 	}
 	detail, err := s.repo.Reject(ctx, versionID, actor.ID, comment)
 	if err != nil {
@@ -260,7 +273,7 @@ func (s *Service) Trash(ctx context.Context, actor auth.User, code, id, ip, user
 	if err != nil {
 		return err
 	}
-	owner, err := s.repo.Owner(ctx, info, id)
+	owner, err := s.owner(ctx, actor, info, id)
 	if err != nil {
 		return err
 	}
@@ -280,7 +293,7 @@ func (s *Service) Restore(ctx context.Context, actor auth.User, code, id, ip, us
 	if err != nil {
 		return err
 	}
-	owner, err := s.repo.Owner(ctx, info, id)
+	owner, err := s.owner(ctx, actor, info, id)
 	if err != nil {
 		return err
 	}
@@ -477,6 +490,9 @@ func (s *Service) validateParent(ctx context.Context, actor auth.User, info Type
 	if parentID == "" {
 		return fmt.Errorf("%w: 必须指定上级内容", ErrInvalidInput)
 	}
+	if !IsUUID(parentID) {
+		return fmt.Errorf("%w: 上级内容不存在", ErrInvalidInput)
+	}
 	parent, err := s.repo.Parent(ctx, info, parentID)
 	if err != nil {
 		return err
@@ -489,6 +505,9 @@ func (s *Service) validateParent(ctx context.Context, actor auth.User, info Type
 
 func (s *Service) validateMedia(ctx context.Context, actor auth.User, info TypeInfo, payload map[string]any) error {
 	for _, mediaID := range MediaIDs(payload) {
+		if !IsUUID(mediaID) {
+			return fmt.Errorf("%w: 图片不存在", ErrInvalidInput)
+		}
 		owner, purpose, status, err := s.repo.MediaInfo(ctx, mediaID)
 		if err != nil {
 			return err
@@ -529,6 +548,14 @@ func (s *Service) log(ctx context.Context, actor auth.User, action, targetType, 
 	}
 	actorID := actor.ID
 	s.audit.Log(ctx, &actorID, action, targetType, targetID, "success", ip, userAgent, metadata)
+}
+
+func (s *Service) owner(ctx context.Context, actor auth.User, info TypeInfo, id string) (string, error) {
+	owner, err := s.repo.Owner(ctx, info, id)
+	if errors.Is(err, ErrNotFound) && !isAdmin(actor) {
+		return "", ErrForbidden
+	}
+	return owner, err
 }
 
 func isAdmin(user auth.User) bool {

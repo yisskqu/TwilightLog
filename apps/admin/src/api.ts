@@ -240,8 +240,7 @@ async function rawRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   return (await response.json()) as T;
 }
 
-/** Restores the session from the HttpOnly refresh cookie. */
-export async function refreshSession(): Promise<User | null> {
+async function requestRefresh(): Promise<User | null> {
   const response = await fetch("/api/v1/auth/refresh", { method: "POST", credentials: "include" });
   if (!response.ok) {
     accessToken = null;
@@ -250,6 +249,22 @@ export async function refreshSession(): Promise<User | null> {
   const data = (await response.json()) as SessionResponse;
   accessToken = data.accessToken;
   return data.user;
+}
+
+let refreshPromise: Promise<User | null> | null = null;
+
+/**
+ * Restores the session from the HttpOnly refresh cookie. Refresh tokens rotate
+ * on every use, so concurrent callers (React StrictMode, parallel 401 retries)
+ * must share one request or the second call would invalidate the session.
+ */
+export function refreshSession(): Promise<User | null> {
+  if (!refreshPromise) {
+    refreshPromise = requestRefresh().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
 }
 
 /** Sends an authenticated request and retries once after refreshing the session. */
